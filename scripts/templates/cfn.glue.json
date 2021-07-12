@@ -1,0 +1,45 @@
+{
+  "Parameters": {
+    "{{ name }}Name": {
+      "Type": "String",
+      "Default": "ds-{{ name }}"
+    },
+    "{{ name }}Role": {
+      "Type": "String"
+    },
+    "{{ name }}SourceKey": {
+      "Type": "String",
+      "Default": "{{ source_key }}"
+    }
+  },
+  "Resources": {
+    "{{ name }}": {
+      "Type": "AWS::Glue::Job",
+      "Properties": {
+        "Name": {
+          "Ref": "{{ name }}Name"
+        },
+        "Role": {
+          "Ref": "{{ name }}Role"
+        },
+        "Command": {
+          "Name": "pythonshell",
+          "PythonVersion": "3",
+          "ScriptLocation": {
+            "Fn::Sub": [
+              "s3://${Bucket}/${Key}",
+              {
+                "Bucket": {
+                  "Ref": "SourceBucket"
+                },
+                "Key": {
+                  "Ref": "{{ name }}SourceKey"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

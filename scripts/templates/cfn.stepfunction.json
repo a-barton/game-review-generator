@@ -1,0 +1,36 @@
+{
+  "Parameters": {
+    "{{ name }}Name": {
+      "Type": "String",
+      "Default": "ds-{{ name }}"
+    },
+    "{{ name }}Role": {
+      "Type": "String"
+    },
+    "{{ name }}SourceKey": {
+      "Type": "String",
+      "Deafault": "{{ source_key }}"
+    }
+  },
+  "Resources": {
+    "{{ name }}": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "StateMachineName": {
+          "Ref": "{{ name }}Name"
+        },
+        "DefinitionS3Location": {
+          "Bucket": {
+            "Ref": "SourceBucket"
+          },
+          "Key": {
+            "Ref": "{{ name }}SourceKey"
+          }
+        },
+        "RoleArn": {
+          "Ref": "{{ name }}Role"
+        }
+      }
+    }
+  }
+}

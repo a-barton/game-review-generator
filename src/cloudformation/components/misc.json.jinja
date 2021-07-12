@@ -1,0 +1,12 @@
+{% from "macros.json.jinja" import source_bucket %}
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "",
+  "Parameters": {
+    "SourceBucket": {
+      "Type": "String",
+      "Default": "{{ source_bucket(environment) }}"
+    }
+  },
+  "Outputs": {}
+}

@@ -1,0 +1,40 @@
+{
+  "Parameters": {
+    "{{ name }}LambdaName": {
+      "Type": "String",
+      "Default": "ds-{{ name }}"
+    },
+    "{{ name }}Role": {
+      "Type": "String"
+    },
+    "{{ name }}SourceKey": {
+      "Type": "String",
+      "Default": "{{ source_key }}"
+    }
+  },
+  "Resources": {
+    "{{ name }}": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "{{ name }}LambdaName"
+        },
+        "Handler": "app.lambda_handler",
+        "Runtime": "python3.8",
+        "Role": {
+          "Ref": "{{ name }}Role"
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "SourceBucket"
+          },
+          "S3Key": {
+            "Ref": "{{ name }}SourceKey"
+          }
+        },
+        "MemorySize": 128,
+        "Timeout": 30
+      }
+    }
+  }
+}

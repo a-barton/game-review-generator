@@ -1,0 +1,9 @@
+{% macro source_bucket(environment) -%}
+  {%- if environment == 'dev' -%}
+    s3-stockland-sy-dl-d-ds-projects    
+  {%- elif environment == 'uat' -%}
+    s3-stockland-sy-dl-q-ds-projects    
+  {%- elif environment == 'prod' -%}
+    s3-stockland-sy-dl-p-ds-projects    
+  {%- endif -%}
+{%- endmacro %}
