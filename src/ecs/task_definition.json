@@ -1,0 +1,18 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "game-review_generator",
+            "image": "<ECR_REPOSITORY_PATH>:<TAG>",
+            "environment": [
+                {
+                    "name": "AWS_BUCKET",
+                    "value": "<AWS_BUCKET>"
+                }
+            ],
+            "memory": 16384,
+            "essential": true
+        }
+    ],
+    "family": "game-reivew-generator-task",
+    "networkMode": "awsvpc"
+}

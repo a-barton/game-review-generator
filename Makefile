@@ -4,6 +4,11 @@ export PROJECT_ALIAS := grg
 export STACK_NAME = $(PROJECT_NAME)
 
 export APPLICATION_HOME := $(pwd)
+export CONTAINER_DIR := ${pwd}/src/src-container
+export CONTAINER_NAME := ${PROJECT_NAME}
+export CONTAINER_VERSION := latest
+
+export S3_BUCKET := game-review-generator
 
 ##############################
 ## Install / Initialisation ##
@@ -40,6 +45,11 @@ tests:
 ####################
 ## Build & Deploy ##
 ####################
+
+container:
+    cd $(CONTAINER_DIR) && \
+    docker build \
+        --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}"
 
 build:
 	@echo "Compiling the CloudFormation template..."
