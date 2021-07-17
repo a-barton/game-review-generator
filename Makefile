@@ -4,7 +4,6 @@ export PROJECT_ALIAS := grg
 export STACK_NAME = $(PROJECT_NAME)
 
 export APPLICATION_HOME := $(pwd)
-export CONTAINER_DIR := ${pwd}/src/src-container
 export CONTAINER_NAME := ${PROJECT_NAME}
 export CONTAINER_VERSION := latest
 
@@ -47,8 +46,7 @@ tests:
 ####################
 
 container:
-    cd $(CONTAINER_DIR) && \
-    docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}"
+	docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}" .
 
 configuration:
 	@echo "Compiling the configuration files..."
