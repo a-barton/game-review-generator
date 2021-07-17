@@ -4,8 +4,8 @@ import io
 from transformers import pipeline
 
 bucket = os.environ.get('S3_BUCKET')
-inference_input_key = 'inference_input.txt'
-output_key = 'inference_output.txt'
+inference_input_key = 'inference_input/prompt.txt'
+output_key = 'inference_output/generated.txt'
 
 s3_client = boto3.client('s3')
 obj = s3_client.get_object(Bucket=bucket, Key=inference_input_key)

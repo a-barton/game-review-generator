@@ -1,0 +1,38 @@
+{
+  "Resources": {
+    "InvokeModelRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{ "Effect": "Allow", "Principal": {"Service": ["lambda.amazonaws.com"]}, "Action": ["sts:AssumeRole"] }]
+        },
+        "Path": "/", 
+        "Policies": [
+          {
+            "PolicyName": "InvokeModelPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "s3:*"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ecs:RunTask",
+                  "iam:PassRole"
+                ],
+                "Resource": "*"
+              }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

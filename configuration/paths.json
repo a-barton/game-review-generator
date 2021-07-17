@@ -1,6 +1,19 @@
 {
-  "configuration": {},
-  "lambdas": {},
-  "stepfunctions": {},
-  "sql": {}
+  "configuration": {
+    "cloudformation_parameters": {
+      "source": "configuration/cloudformation.json",
+      "build": ".build/configuration/cloudformation.json",
+      "remote": "s3://{{ parameters.bucket }}/configuration/cloudformation.json"
+    }
+  },
+  "api_gateway": {},
+  "ecs": {},
+  "iam": {},
+  "lambdas": {
+    "invoke_model": {
+      "source": "src/lambdas/invoke_model",
+      "build": ".build/lambdas/invoke_model.zip",
+      "remote": "s3://{{ parameters.bucket }}/source/lambdas/invoke_model.zip"
+    }
+  }
 }

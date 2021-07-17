@@ -6,7 +6,7 @@
             "environment": [
                 {
                     "name": "AWS_BUCKET",
-                    "value": "<AWS_BUCKET>"
+                    "value": "${Bucket}"
                 }
             ],
             "memory": 16384,

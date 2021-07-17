@@ -27,13 +27,7 @@ JINJA = Environment(loader=FileSystemLoader(DIR))
 
 
 @click.command()
-@click.option(
-    "--environment",
-    required=True,
-    envvar="ENV",
-    type=click.Choice(["dev", "uat", "prod"]),
-)
-def compile(environment):
+def compile():
     ## Load the global variables which are accessable to the templates ##
     if JINJA_VARIABLES.exists():
         variables = json.loads((DIR / "globals.json").read_text())
@@ -45,10 +39,6 @@ def compile(environment):
         tags = json.loads((DIR / "tags.json").read_text())
     else:
         tags = {}
-
-    ## Add environment information to both dictionaries ##
-    variables["environment"] = environment
-    tags["Environment"] = environment.upper()
 
     ## Loop over each file in the components directory ##
     output = {}

@@ -48,23 +48,31 @@ tests:
 
 container:
     cd $(CONTAINER_DIR) && \
-    docker build \
-        --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}"
+    docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}"
+
+configuration:
+	@echo "Compiling the configuration files..."
+	@python scripts/compile_configuration.py --parameters parameters.json
+.PHONY: configuration
 
 build:
 	@echo "Compiling the CloudFormation template..."
 	@python src/cloudformation/compile.py > .build/cfn.json
 
 	@echo "Building application artifacts..."
-	@python scripts/build_source.py
+	@python scripts/build_source.py --config .build/configuration/paths.json
+
+remote:
+	@python scripts/sync_with_remote.py --config .build/configuration/paths.json
 
 infrastructure:
 	aws cloudformation create-stack \
 		--stack-name $(STACK_NAME) \
 		--template-body file://.build/cfn.json \
-		--parameters files://.build/cfn.parameters.json
+		--parameters file://.build/configuration/cloudformation.json \
+		--capabilities CAPABILITY_IAM
 
-all: build infrastructure
+all: configuration build remote infrastructure
 
 destroy:
 	aws cloudformation delete-stack \
