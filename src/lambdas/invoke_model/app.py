@@ -1,4 +1,6 @@
 import boto3
 
 def lambda_handler(event, context):
-    return {}
+    prompt = event['prompt']
+    print(prompt)
+    return {'prompt' : prompt}
