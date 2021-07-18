@@ -18,6 +18,8 @@ JINJA_VARIABLES = DIR / "globals.json"
 RESOURCE_TAGS = DIR / "tags.json"
 COMPONENTS_DIR = DIR / "components"
 MACROS_DIR = DIR / "macros"
+NO_TAGS_RESOURCES = ['AWS::ApiGateway::Resource', 'AWS::ApiGateway::Method', 
+'AWS::ApiGateway::Deployment', 'AWS::ApiGateway::Account', 'AWS::Lambda::Permission']
 
 JINJA = Environment(loader=FileSystemLoader(DIR))
 
@@ -80,6 +82,9 @@ def compile():
 def add_tags(resources, tags):
     for resource_key, definition in resources.items():
         definition_tags = definition["Properties"].get("Tags")
+
+        if definition["Type"] in NO_TAGS_RESOURCES:
+            continue
 
         if definition["Type"].startswith("AWS::Glue"):
             definition_tags = definition_tags or {}

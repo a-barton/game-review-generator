@@ -4,6 +4,14 @@
         "ParameterValue": "{{ parameters.bucket }}"
     },
     {
+        "ParameterKey": "Region",
+        "ParameterValue": "{{ parameters.region }}"
+    },
+    {
+        "ParameterKey": "AccountID",
+        "ParameterValue": "{{ parameters.account_id }}"
+    },
+    {
         "ParameterKey": "InvokeModelLambdaName",
         "ParameterValue": "invoke-model"
 
@@ -17,5 +25,9 @@
         "ParameterKey": "InvokeModelSourceKey",
         "ParameterValue": "source/lambdas/invoke_model.zip"
 
+    },
+    {
+        "ParameterKey": "ReviewApiName",
+        "ParameterValue": "ReviewApi"
     }
 ]

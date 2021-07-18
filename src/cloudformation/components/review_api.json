@@ -1,0 +1,136 @@
+{
+    "Parameters": {
+      "ReviewApiName": {
+          "Type": "String"
+      },
+      "AccountID": {
+          "Type": "String"
+      },
+      "Region": {
+          "Type": "String"
+      }
+    },
+    "Resources": {
+      "ReviewApi": {
+          "Type": "AWS::ApiGateway::RestApi",
+          "Properties": {
+              "Name": {"Ref": "ReviewApiName"},
+              "Description": "API used to invoke game review generation model based on given prompt",
+              "FailOnWarnings": true
+          }
+      },
+      "LambdaPermission": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "Action": "lambda:invokeFunction",
+            "FunctionName": {"Fn::GetAtt": ["InvokeModel", "Arn"]},
+            "Principal": "apigateway.amazonaws.com",
+            "SourceArn": {"Fn::Join": ["", 
+              ["arn:aws:execute-api:", {"Ref": "Region"}, ":", {"Ref": "AccountID"}, ":", {"Ref": "ReviewApi"}, "/*"]
+            ]}
+          }
+      },
+      "ReviewApiStage": {
+        "DependsOn" : ["ApiGatewayAccount"],
+        "Type": "AWS::ApiGateway::Stage",
+        "Properties": {
+          "DeploymentId": {"Ref": "ApiDeployment"},
+          "MethodSettings": [{
+            "DataTraceEnabled": true,
+            "HttpMethod": "*",
+            "LoggingLevel": "INFO",
+            "ResourcePath": "/*"
+          }],
+          "RestApiId": {"Ref": "ReviewApi"},
+          "StageName": "LATEST"
+        }
+      },
+      "ApiGatewayCloudWatchLogsRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Principal": { "Service": ["apigateway.amazonaws.com"] },
+              "Action": ["sts:AssumeRole"]
+            }]
+          },
+          "Policies": [{
+            "PolicyName": "ApiGatewayLogsPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:DescribeLogGroups",
+                  "logs:DescribeLogStreams",
+                  "logs:PutLogEvents",
+                  "logs:GetLogEvents",
+                  "logs:FilterLogEvents"
+                ],
+                "Resource": "*"
+              }]
+            }
+          }]
+        }
+      },
+      "ApiGatewayAccount": {
+        "Type" : "AWS::ApiGateway::Account",
+        "Properties" : {
+          "CloudWatchRoleArn" : {"Fn::GetAtt" : ["ApiGatewayCloudWatchLogsRole", "Arn"] }
+        }
+      },
+      "ApiDeployment": {
+        "Type": "AWS::ApiGateway::Deployment",
+        "DependsOn": ["ReviewRequest"],
+        "Properties": {
+          "RestApiId": {"Ref": "ReviewApi"},
+          "StageName": "DummyStage"
+        }
+      },
+      "ReviewResource": {
+        "Type": "AWS::ApiGateway::Resource",
+        "Properties": {
+          "RestApiId": {"Ref": "ReviewApi"},
+          "ParentId": {"Fn::GetAtt": ["ReviewApi", "RootResourceId"]},
+          "PathPart": "review"
+        }
+      },
+      "ReviewRequest": {
+        "DependsOn": "LambdaPermission",
+        "Type": "AWS::ApiGateway::Method",
+        "Properties": {
+          "AuthorizationType": "NONE",
+          "HttpMethod": "GET",
+          "Integration": {
+            "Type": "AWS",
+            "IntegrationHttpMethod": "POST",
+            "Uri": {"Fn::Join" : ["", 
+              ["arn:aws:apigateway:", {"Ref": "Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["InvokeModel", "Arn"]}, "/invocations"]
+            ]},
+            "IntegrationResponses": [{
+              "StatusCode": 200
+            }],
+            "RequestTemplates": {
+              "application/json": {"Fn::Join" : ["", [
+                "{",
+                  "\"prompt\": \"$input.params('prompt')\", \"bucket\": \"", {"Ref": "Bucket"}, "\"",
+                "}"
+              ]]}
+            }
+          },
+          "RequestParameters": {
+            "method.request.querystring.prompt": false
+          },
+          "ResourceId": {"Ref": "ReviewResource"},
+          "RestApiId": {"Ref": "ReviewApi"},
+          "MethodResponses": [{
+            "StatusCode": 200
+          }]
+        }
+      }
+    }
+  }
