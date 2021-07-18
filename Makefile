@@ -3,9 +3,10 @@ export PROJECT_ALIAS := grg
 
 export STACK_NAME = $(PROJECT_NAME)
 
-export APPLICATION_HOME := $(pwd)
+export APPLICATION_HOME := ${PWD}
 export CONTAINER_NAME := ${PROJECT_NAME}
 export CONTAINER_VERSION := latest
+export CONTAINER_TEST_DIR := ${PWD}/tests/test_container_mount
 
 export S3_BUCKET := game-review-generator
 
@@ -47,6 +48,9 @@ tests:
 
 container:
 	docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}" .
+
+run-container-local:
+	docker run -v "${CONTAINER_TEST_DIR}:/game-review-generator" "${CONTAINER_NAME}:${CONTAINER_VERSION}"
 
 configuration:
 	@echo "Compiling the configuration files..."
