@@ -6,9 +6,6 @@
       "remote": "s3://game-review-generator/configuration/cloudformation.json"
     }
   },
-  "api_gateway": {},
-  "ecs": {},
-  "iam": {},
   "lambdas": {
     "invoke_model": {
       "source": "src/lambdas/invoke_model",
