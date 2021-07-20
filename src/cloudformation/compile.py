@@ -15,7 +15,6 @@ from jinja2 import Environment, FileSystemLoader
 
 DIR = Path(os.path.split(__file__)[0])
 JINJA_VARIABLES = DIR / "globals.json"
-RESOURCE_TAGS = DIR / "tags.json"
 COMPONENTS_DIR = DIR / "components"
 MACROS_DIR = DIR / "macros"
 NO_TAGS_RESOURCES = ['AWS::ApiGateway::Resource', 'AWS::ApiGateway::Method', 
@@ -35,12 +34,6 @@ def compile():
         variables = json.loads((DIR / "globals.json").read_text())
     else:
         variables = {}
-
-    ## Load in the tags which will be automatically applied to each resource ##
-    if RESOURCE_TAGS.exists():
-        tags = json.loads((DIR / "tags.json").read_text())
-    else:
-        tags = {}
 
     ## Loop over each file in the components directory ##
     output = {}
@@ -63,9 +56,6 @@ def compile():
 
             file_object = json.loads(json_string)
 
-            if "Resources" in file_object:
-                file_object["Resources"] = add_tags(file_object["Resources"], tags)
-
             output = merge(output, file_object)
         except Exception as exc:
             raise RuntimeError(f"Failed processing '{str(path)}'") from exc
@@ -77,35 +67,6 @@ def compile():
 #################
 ## Subroutines ##
 #################
-
-
-def add_tags(resources, tags):
-    for resource_key, definition in resources.items():
-        definition_tags = definition["Properties"].get("Tags")
-
-        if definition["Type"] in NO_TAGS_RESOURCES:
-            continue
-
-        if definition["Type"].startswith("AWS::Glue"):
-            definition_tags = definition_tags or {}
-            definition_tags["ResourceName"] = resource_key
-
-            merged_tags = {**tags, **definition_tags}
-
-        else:
-            definition_tags = definition_tags or []
-            definition_tags.append({"Key": "ResourceName", "Value": resource_key})
-
-            merged_tags = {
-                **tags,
-                **{item["Key"]: item["Value"] for item in definition_tags},
-            }
-            merged_tags = [{"Key": k, "Value": v} for k, v in merged_tags.items()]
-
-        resources[resource_key]["Properties"]["Tags"] = merged_tags
-
-    return resources
-
 
 def merge(*dicts):
     """Merges N cloudformation definition objects together."""

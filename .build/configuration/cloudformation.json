@@ -16,10 +16,6 @@
     "ParameterValue": "invoke-model"
   },
   {
-    "ParameterKey": "InvokeModelRoleARN",
-    "ParameterValue": "arn:aws:iam::149167650712:role/invoke-model-role"
-  },
-  {
     "ParameterKey": "InvokeModelSourceKey",
     "ParameterValue": "source/lambdas/invoke_model.zip"
   },
