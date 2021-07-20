@@ -72,7 +72,7 @@ infrastructure:
 		--stack-name $(STACK_NAME) \
 		--template-body file://.build/cfn.json \
 		--parameters file://.build/configuration/cloudformation.json \
-		--capabilities CAPABILITY_IAM
+		--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
 all: configuration build remote infrastructure
 

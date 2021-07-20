@@ -3,9 +3,6 @@
     "InvokeModelLambdaName": {
       "Type": "String"
     },
-    "InvokeModelRoleARN": {
-      "Type": "String"
-    },
     "InvokeModelSourceKey": {
       "Type": "String"
     },

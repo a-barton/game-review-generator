@@ -38,6 +38,7 @@
     "EcsInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "RoleName": "EcsInstanceRole",
         "AssumeRolePolicyDocument": {
           "Version": "2008-10-17",
           "Statement": [
@@ -81,16 +82,16 @@
           },
           "ResourceRequirements": [
             {
-              "type": "GPU",
-              "value": "1"
+              "Type": "GPU",
+              "Value": "1"
             },
             {
-              "type": "VCPU",
-              "value": "2"
+              "Type": "VCPU",
+              "Value": "2"
             },
             {
-              "type": "MEMORY",
-              "value": "16384"
+              "Type": "MEMORY",
+              "Value": "16384"
             }
           ],
           "Command": [
