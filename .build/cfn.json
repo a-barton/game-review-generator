@@ -101,16 +101,12 @@
           },
           "ResourceRequirements": [
             {
-              "Type": "GPU",
+              "Type": "VCPU",
               "Value": "1"
             },
             {
-              "Type": "VCPU",
-              "Value": "2"
-            },
-            {
               "Type": "MEMORY",
-              "Value": "16384"
+              "Value": "1024"
             }
           ],
           "Command": [
@@ -158,9 +154,9 @@
           "Type": "SPOT",
           "MinvCpus": 0,
           "DesiredvCpus": 0,
-          "MaxvCpus": 4,
+          "MaxvCpus": 1,
           "InstanceTypes": [
-            "g3s.xlarge"
+            "a1.medium"
           ],
           "Subnets": [
             {
@@ -245,7 +241,7 @@
     "Subnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
-        "AvailabilityZone": "ap-southeast-2a",
+        "AvailabilityZone": "ap-southeast-2b",
         "CidrBlock": "10.0.0.0/24",
         "VpcId": {
           "Ref": "VPC"

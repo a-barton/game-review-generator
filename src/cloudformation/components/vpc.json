@@ -40,7 +40,7 @@
     "Subnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
-        "AvailabilityZone": "ap-southeast-2a",
+        "AvailabilityZone": "ap-southeast-2b",
         "CidrBlock": "10.0.0.0/24",
         "VpcId": {
           "Ref": "VPC"
