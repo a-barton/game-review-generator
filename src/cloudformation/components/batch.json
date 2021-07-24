@@ -82,16 +82,12 @@
           },
           "ResourceRequirements": [
             {
-              "Type": "GPU",
+              "Type": "VCPU",
               "Value": "1"
             },
             {
-              "Type": "VCPU",
-              "Value": "2"
-            },
-            {
               "Type": "MEMORY",
-              "Value": "16384"
+              "Value": "1024"
             }
           ],
           "Command": [
@@ -137,9 +133,9 @@
           "Type": "SPOT",
           "MinvCpus": 0,
           "DesiredvCpus": 0,
-          "MaxvCpus": 4,
+          "MaxvCpus": 1,
           "InstanceTypes": [
-            "g3s.xlarge"
+            "m3.medium"
           ],
           "Subnets": [
             {
