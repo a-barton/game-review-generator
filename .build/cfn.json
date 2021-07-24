@@ -156,7 +156,7 @@
           "DesiredvCpus": 0,
           "MaxvCpus": 1,
           "InstanceTypes": [
-            "a1.medium"
+            "m3.medium"
           ],
           "Subnets": [
             {

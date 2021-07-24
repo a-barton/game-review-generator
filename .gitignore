@@ -1,0 +1,16 @@
+# Build ignores
+.build/
+
+# Data ignores
+data/
+
+# VSCode ignores
+.vscode/
+
+# Python ignores
+*__pycache__/
+.pytest_cache/
+
+# Flask ignores:
+instance/
+.webassets-cache
