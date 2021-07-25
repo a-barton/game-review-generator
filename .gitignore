@@ -4,6 +4,11 @@
 # Data ignores
 data/
 
+# Test artifact ignores
+tests/test_container_mount/fine-tuned-model/
+tests/test_container_mount/model-training/
+tests/test_container_mount/inference_output/
+
 # VSCode ignores
 .vscode/
 
