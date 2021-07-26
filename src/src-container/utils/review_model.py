@@ -7,7 +7,7 @@ class ReviewModel:
 
     def __init__(self, model_checkpoint=None, tokenizer_name=None, 
         location='aws', bucket=None, block_size=128, **kwargs):
-        default_model = 'gpt2'
+        default_model = 'EleutherAI/gpt-neo-125M' if location=='aws' else 'gpt2'
         default_tokenizer = 'gpt2'
         self.model_checkpoint = model_checkpoint or default_model
         self.tokenizer_name = tokenizer_name or default_tokenizer

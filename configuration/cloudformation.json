@@ -8,6 +8,10 @@
         "ParameterValue": "{{ parameters.region }}"
     },
     {
+        "ParameterKey": "AvailabilityZone",
+        "ParameterValue": "{{ parameters.availability_zone }}"
+    },
+    {
         "ParameterKey": "AccountID",
         "ParameterValue": "{{ parameters.account_id }}"
     },
@@ -24,5 +28,9 @@
     {
         "ParameterKey": "ReviewApiName",
         "ParameterValue": "ReviewApi"
+    },
+    {
+        "ParameterKey": "BatchInstanceType",
+        "ParameterValue": "{{ parameters.batch_instance_type }}"
     }
 ]

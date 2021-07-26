@@ -1,4 +1,9 @@
 {
+  "Parameters" : {
+    "AvailabilityZone": {
+      "Type": "String"
+    }
+  },
   "Resources": {
     "VPC": {
       "Type": "AWS::EC2::VPC",
@@ -40,7 +45,7 @@
     "Subnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
-        "AvailabilityZone": "ap-southeast-2b",
+        "AvailabilityZone": { "Ref" : "AvailabilityZone"},
         "CidrBlock": "10.0.0.0/24",
         "VpcId": {
           "Ref": "VPC"

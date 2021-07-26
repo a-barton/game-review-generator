@@ -2,6 +2,9 @@
   "Parameters": {
     "Bucket": {
       "Type": "String"
+    },
+    "BatchInstanceType": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -135,7 +138,9 @@
           "DesiredvCpus": 0,
           "MaxvCpus": 1,
           "InstanceTypes": [
-            "m3.medium"
+            {
+              "Ref": "BatchInstanceType"
+            }
           ],
           "Subnets": [
             {
