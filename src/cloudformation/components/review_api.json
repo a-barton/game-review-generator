@@ -117,7 +117,7 @@
             "RequestTemplates": {
               "application/json": {"Fn::Join" : ["", [
                 "{",
-                  "\"prompt\": \"$input.params('prompt')\", \"bucket\": \"", {"Ref": "Bucket"}, "\"",
+                  "\"mode\": \"$input.params('mode')\", \"prompt\": \"$input.params('prompt')\", \"bucket\": \"", {"Ref": "Bucket"}, "\"",
                 "}"
               ]]}
             }

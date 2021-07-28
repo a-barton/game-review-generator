@@ -10,9 +10,8 @@ bucket = os.environ.get("S3_BUCKET", None)
 location = "aws" if bucket else "local"
 mode = os.environ.get("MODE", None)
 
-print(os.listdir())
-os.chdir('artifacts/')
-print(os.listdir())
+if location == "local":
+    os.chdir('artifacts/')
 
 if mode == "train":
     LOGGER.info("Commencing Model Fine Tuning")
