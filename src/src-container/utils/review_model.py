@@ -1,5 +1,6 @@
 from .aws_utils import download_s3_file, download_s3_folder, upload_s3_file, upload_s3_folder
 from .logging import LOGGER
+import os
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
 
@@ -29,6 +30,9 @@ class ReviewModel:
         generated = model.generate(input, max_length=max_length)
         resulting_string = tokenizer.decode(generated.tolist()[0])
         LOGGER.info("Saving generated output")
+        if "/" in prompt_output_path:
+            output_dir = "/".join(prompt_output_path.split("/")[:-1])
+        os.makedirs(output_dir, exist_ok=True)
         open(prompt_output_path, mode='w').write(resulting_string)
         if self.location == 'aws':
             upload_s3_file(self.bucket, self.prompt_output_path, self.promp_output_path)

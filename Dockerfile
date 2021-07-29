@@ -17,16 +17,16 @@ RUN conda --version
 WORKDIR /src/src-container
 
 # Create environment
-COPY environment.yaml .
+COPY src/src-container/environment.yaml .
 RUN conda env create -f environment.yaml
 
 # Make new shells switch to new conda environment by default
-RUN echo "source activate grg" >> ~/.bashrc
-ENV PATH /opt/conda/envs/grg/bin:$PATH
+RUN echo "source activate grg-container" >> ~/.bashrc
+ENV PATH /opt/conda/envs/grg-container/bin:$PATH
 
 # Switch shell from sh to bash
-SHELL ["conda", "run", "-n", "grg", "/bin/bash", "-c"]
+SHELL ["conda", "run", "-n", "grg-container", "/bin/bash", "-c"]
 
 COPY src/src-container/ .
 
-ENTRYPOINT ["conda", "run", "-n", "grg", "python3", "generate_review.py"]
+ENTRYPOINT ["conda", "run", "-n", "grg-container", "python3", "generate_review.py"]
