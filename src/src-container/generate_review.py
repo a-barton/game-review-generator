@@ -17,7 +17,7 @@ if mode == "train":
     LOGGER.info("Commencing Model Fine Tuning")
     training_input_key = "training_input/data.csv"
     model_artifacts_key = "fine-tuned-model"
-    model = ReviewModel(location=location)
+    model = ReviewModel(location=location, bucket=bucket)
     model.fine_tune(
         data_path=training_input_key, 
         model_save_path=model_artifacts_key
@@ -28,7 +28,7 @@ else:
     inference_input_key = "inference_input/prompt.txt"
     inference_output_key = 'inference_output/generated.txt'
     model_checkpoint = "fine-tuned-model"
-    model = ReviewModel(location=location, model_checkpoint=model_checkpoint)
+    model = ReviewModel(location=location, bucket=bucket, model_checkpoint=model_checkpoint)
     model.predict(
         prompt_input_path=inference_input_key, 
         prompt_output_path=inference_output_key, 

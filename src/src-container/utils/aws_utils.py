@@ -25,5 +25,5 @@ def upload_s3_file(bucket, key, local_path):
 
 def upload_s3_folder(bucket, key, local_path):
     s3_path = f"s3://{bucket}/{key}"
-    subprocess.check_call(f"aws sync --quiet {local_path} {s3_path}".split(" "))
+    subprocess.check_call(f"aws s3 sync --quiet {local_path} {s3_path}".split(" "))
     return
