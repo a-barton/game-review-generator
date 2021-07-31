@@ -2,7 +2,7 @@ import boto3
 
 def lambda_handler(event, context):
     prompt = event.get('prompt')
-    mode = event.get('mode', 'predict')
+    mode = event.get('mode', 'inference')
     bucket = event.get('bucket')
     inference_input_key = 'inference_input/prompt.txt'
 
