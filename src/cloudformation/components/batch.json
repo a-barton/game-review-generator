@@ -62,6 +62,23 @@
         ]
       }
     },
+    "EcsLaunchTemplate": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "ECSLaunchTemplate",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvdcz",
+              "Ebs": {
+                "VolumeSize": 50,
+                "VolumeType": "gp2"
+              }
+            }
+          ]
+        }
+      }
+    },
     "BatchProcessingJobDefinition": {
       "Type": "AWS::Batch::JobDefinition",
       "Properties": {
@@ -146,6 +163,9 @@
               "Ref": "BatchInstanceType"
             }
           ],
+          "LaunchTemplate": {
+            "LaunchTemplateId" : { "Ref" : "EcsLaunchTemplate"}
+          },
           "Subnets": [
             {
               "Ref": "Subnet"
