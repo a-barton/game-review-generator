@@ -1,6 +1,4 @@
 import os
-import boto3
-import pandas as pd
 
 from utils import ReviewModel
 from utils import LOGGER

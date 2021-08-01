@@ -51,7 +51,7 @@ tests:
 ####################
 
 container:
-	docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}" .
+	docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}" src/src-container/.
 
 run-container-local-train:
 	docker run -e "MODE=train" -v "${CONTAINER_TEST_DIR}:/src/src-container/artifacts/" "${CONTAINER_NAME}:${CONTAINER_VERSION}"

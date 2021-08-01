@@ -35,7 +35,7 @@ class ReviewModel:
         os.makedirs(output_dir, exist_ok=True)
         open(prompt_output_path, mode='w').write(resulting_string)
         if self.location == 'aws':
-            upload_s3_file(self.bucket, self.prompt_output_path, self.promp_output_path)
+            upload_s3_file(self.bucket, prompt_output_path, prompt_output_path)
         return
 
     def fine_tune(self, data_path, model_save_path):

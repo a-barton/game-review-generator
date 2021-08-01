@@ -1,9 +1,9 @@
 import os
 import logging
 
-logging.basicConfig(level=logging.DEBUG)  # HACK: For some reason I need this??
+logging.basicConfig(level=logging.DEBUG)
 
-LOGGER = logging.getLogger("corelogic")  # NOTE: Remove this after testing!
+LOGGER = logging.getLogger("game-review-generator")  # NOTE: Remove this after testing!
 
 log_level = {
     "CRITICAL": logging.CRITICAL,
