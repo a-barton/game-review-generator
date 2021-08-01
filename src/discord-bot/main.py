@@ -21,7 +21,7 @@ async def on_message(message):
         return
     
     if message.content.startswith("$hello"):
-        await message.channel.send("Hello!")
+        await message.reply(f"Hello {message.author}!")
 
     if message.content.startswith("https://store.steampowered.com/app/"):
         print('Detected Steam URL')
