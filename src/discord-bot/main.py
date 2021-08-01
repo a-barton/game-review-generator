@@ -33,7 +33,11 @@ async def on_message(message):
         print(f"App Name = {app_name}\nApp Description = {app_desc}")
         print("Polling transformer API to generate review")
         review = poll_transformer_api(app_desc)
-        await message.reply(f"Here's my take on {app_name} \n ```" + review + "```")
+        print(f"Type of 'review' object returned by transformer API: {type(review)}")
+        print(f"Length of 'review' object returned by transformer API: {len(review)}")
+        print("'review' object:")
+        print(review)
+        await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
 
 def get_app_details(app_id):
     request_successful = False
