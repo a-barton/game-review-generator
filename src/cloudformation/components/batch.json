@@ -69,9 +69,9 @@
         "LaunchTemplateData": {
           "BlockDeviceMappings": [
             {
-              "DeviceName": "/dev/xvdcz",
+              "DeviceName": "/dev/xvda",
               "Ebs": {
-                "VolumeSize": 50,
+                "VolumeSize": 150,
                 "VolumeType": "gp2"
               }
             }
