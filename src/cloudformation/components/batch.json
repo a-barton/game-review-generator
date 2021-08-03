@@ -2,6 +2,9 @@
   "Parameters": {
     "Bucket": {
       "Type": "String"
+    },
+    "BatchInstanceType": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -59,6 +62,23 @@
         ]
       }
     },
+    "EcsLaunchTemplate": {
+      "Type": "AWS::EC2::LaunchTemplate",
+      "Properties": {
+        "LaunchTemplateName": "ECSLaunchTemplate",
+        "LaunchTemplateData": {
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "VolumeSize": 150,
+                "VolumeType": "gp2"
+              }
+            }
+          ]
+        }
+      }
+    },
     "BatchProcessingJobDefinition": {
       "Type": "AWS::Batch::JobDefinition",
       "Properties": {
@@ -83,11 +103,15 @@
           "ResourceRequirements": [
             {
               "Type": "VCPU",
-              "Value": "1"
+              "Value": "4"
             },
             {
               "Type": "MEMORY",
-              "Value": "1024"
+              "Value": "16384"
+            },
+            {
+              "Type": "GPU",
+              "Value": "1"
             }
           ],
           "Command": [
@@ -133,10 +157,15 @@
           "Type": "SPOT",
           "MinvCpus": 0,
           "DesiredvCpus": 0,
-          "MaxvCpus": 1,
+          "MaxvCpus": 4,
           "InstanceTypes": [
-            "m3.medium"
+            {
+              "Ref": "BatchInstanceType"
+            }
           ],
+          "LaunchTemplate": {
+            "LaunchTemplateId" : { "Ref" : "EcsLaunchTemplate"}
+          },
           "Subnets": [
             {
               "Ref": "Subnet"
