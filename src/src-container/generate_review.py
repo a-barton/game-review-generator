@@ -8,6 +8,11 @@ bucket = os.environ.get("S3_BUCKET", None)
 location = "aws" if bucket else "local"
 mode = os.environ.get("MODE", None)
 
+hyperparameters = {
+    "max_length" : 300,
+    "repetition_penalty" : 1.2
+}
+
 if location == "local":
     os.chdir('artifacts/')
 
@@ -30,6 +35,6 @@ else:
     model.predict(
         prompt_input_path=inference_input_key, 
         prompt_output_path=inference_output_key, 
-        max_length=300
+        hyperparameters = hyperparameters
     )
     LOGGER.info("Model Inference Complete")
