@@ -39,6 +39,10 @@ lambda:
 ###########
 
 tests:
+	export AWS_ACCESS_KEY_ID='testing' && \
+ 	export AWS_SECRET_ACCESS_KEY='testing' && \
+ 	export AWS_SECURITY_TOKEN='testing' && \
+ 	export AWS_SESSION_TOKEN='testing' && \
 	python -m pytest tests/ -v
 .PHONY: tests
 
@@ -47,10 +51,13 @@ tests:
 ####################
 
 container:
-	docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}" .
+	docker build --tag="${CONTAINER_NAME}:${CONTAINER_VERSION}" src/src-container/.
 
-run-container-local:
-	docker run -v "${CONTAINER_TEST_DIR}:/game-review-generator" "${CONTAINER_NAME}:${CONTAINER_VERSION}"
+run-container-local-train:
+	docker run -e "MODE=train" -v "${CONTAINER_TEST_DIR}:/src/src-container/artifacts/" "${CONTAINER_NAME}:${CONTAINER_VERSION}"
+
+run-container-local-predict:
+	docker run -v "${CONTAINER_TEST_DIR}:/src/src-container/artifacts/" "${CONTAINER_NAME}:${CONTAINER_VERSION}"
 
 configuration:
 	@echo "Compiling the configuration files..."
