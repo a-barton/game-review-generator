@@ -1,0 +1,71 @@
+{
+  "Parameters": {
+    "Bucket": {
+      "Type": "String"
+    },
+    "BotInstanceType": {
+      "Type": "String"
+    },
+    "BotInstanceAmi": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "BotEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": { "Ref" : "BotInstanceType" },
+        "ImageId": { "Ref" : "BotInstanceAmi" },
+        "UserData": {
+            "Fn::Base64": {
+              "Fn::Join": ["", [
+                "#!/bin/bash -ex\n",
+                "yum update -y\n",
+                "yum install -y python3\n",
+                "aws s3 sync s3://",
+                { "Ref" : "Bucket" },
+                "/discord-bot/code ./discord-bot/code\n",
+                "pip3 install -r discord-bot/code/requirements.txt\n",
+                "export DISCORD_BOT_TOKEN=",
+                "{{resolve:secretsmanager:DISCORD_BOT_TOKEN:SecretString:DISCORD_BOT_TOKEN}}",
+                "\n",
+                "python discord-bot/code/main.py"
+              ]]
+            }
+        }
+      }
+    },
+    "BotInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "BotInstanceRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        ]
+      }
+    },
+    "BotInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "BotInstanceRole"
+          }
+        ]
+      }
+    }
+  }
+}

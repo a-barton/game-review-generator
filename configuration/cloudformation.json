@@ -32,5 +32,13 @@
     {
         "ParameterKey": "BatchInstanceType",
         "ParameterValue": "{{ parameters.batch_instance_type }}"
+    },
+    {
+        "ParameterKey": "BotInstanceType",
+        "ParameterValue": "{{ parameters.bot_instance_type }}"
+    },
+    {
+        "ParameterKey": "BotInstanceAmi",
+        "ParameterValue": "{{ parameters.bot_instance_ami }}"
     }
 ]

@@ -23,8 +23,8 @@ def main(configuration_file):
     print("Building the lambdas...")
     build_definitions(definitions=config.lambdas, func=build_lambda)
 
-    #print("Building the cloudformation...")
-    #build_definitions(definitions=config.cloudformation)
+    print("Passing through discord-bot source...")
+    passthrough_build(source_path=config.discord_bot.source, build_path=config.discord_bot.build)
 
     end_time = datetime.now()
     time_diff = end_time - start_time
@@ -90,6 +90,7 @@ def build_lambda(source_path, build_path):
         )
 
     return
+
 
 ##########################
 ## __name__ == __main__ ##
