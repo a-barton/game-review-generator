@@ -4,6 +4,8 @@ import re
 
 import boto3
 import click
+import os
+import subprocess
 
 from utils import load_config
 
@@ -21,13 +23,20 @@ def main(configuration_file):
             if "remote" in definition:
                 s3_uri = definition.remote
                 bucket, key = re.match(r"s3:\/\/(.+?)\/(.+)", s3_uri).groups()
-
-                s3.upload_file(definition.build, bucket, key)
+                
+                if os.path.isdir(definition.build):
+                    upload_s3_folder(bucket, key, definition.build)
+                else:
+                    s3.upload_file(definition.build, bucket, key)
             else:
                 continue
 
     return
 
+def upload_s3_folder(bucket, key, local_path):
+    s3_path = f"s3://{bucket}/{key}"
+    subprocess.check_call(f"aws s3 sync --quiet {local_path} {s3_path}".split(" "))
+    return
 
 if __name__ == "__main__":
     # pylint: disable=no-value-for-parameter

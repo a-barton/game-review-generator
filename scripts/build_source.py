@@ -48,9 +48,8 @@ def main(configuration_file):
 def passthrough_build(source_path, build_path):
     """Simply copies files into the build directory without any special instructions."""
     build_dir, _ = os.path.split(build_path)
-    os.makedirs(build_dir, exist_ok=True)
-
-    shutil.copy2(source_path, build_path)
+    shutil.rmtree(build_path)
+    shutil.copytree(source_path, build_path)
     return
 
 

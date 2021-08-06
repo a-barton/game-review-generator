@@ -7,9 +7,11 @@
     }
   },
   "discord_bot": {
-    "source": "src/discord-bot/",
-    "build": ".build/discord-bot/",
-    "remote": "s3://{{ parameters.bucket }}/source/discord-bot/"
+    "discord_bot": {
+      "source": "src/discord-bot/",
+      "build": ".build/discord-bot/",
+      "remote": "s3://{{ parameters.bucket }}/source/discord-bot/"
+    }
   },
   "ecs": {},
   "iam": {},
