@@ -6,7 +6,7 @@
       "remote": "s3://{{ parameters.bucket }}/configuration/cloudformation.json"
     }
   },
-  "discord_bot": {
+  "ec2": {
     "discord_bot": {
       "source": "src/discord-bot/",
       "build": ".build/discord-bot/",

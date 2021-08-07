@@ -24,7 +24,7 @@ def main(configuration_file):
     build_definitions(definitions=config.lambdas, func=build_lambda)
 
     print("Passing through discord-bot source...")
-    passthrough_build(source_path=config.discord_bot.source, build_path=config.discord_bot.build)
+    passthrough_build(source_path=config.ec2.discord_bot.source, build_path=config.ec2.discord_bot.build)
 
     end_time = datetime.now()
     time_diff = end_time - start_time
