@@ -17,7 +17,6 @@
         "InstanceType": { "Ref" : "BotInstanceType" },
         "ImageId": { "Ref" : "BotInstanceAmi" },
         "IamInstanceProfile": { "Ref" : "BotInstanceProfile" },
-        "Monitoring": true,
         "UserData": {
             "Fn::Base64": {
               "Fn::Join": ["", [
