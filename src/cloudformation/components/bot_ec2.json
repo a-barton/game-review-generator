@@ -28,9 +28,6 @@
                 { "Ref" : "Bucket" },
                 "/source/discord-bot ./discord-bot\n",
                 "pip3 install -r discord-bot/requirements.txt\n",
-                "export DISCORD_BOT_TOKEN=",
-                "{{resolve:secretsmanager:DISCORD_BOT_TOKEN:SecretString:DISCORD_BOT_TOKEN}}",
-                "\n",
                 "python3 discord-bot/main.py"
               ]]
             }

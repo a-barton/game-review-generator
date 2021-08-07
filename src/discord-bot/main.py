@@ -1,10 +1,12 @@
 import discord
+import boto3
 import os
 import re
 import requests
 import json
 import time
 
+from utils import get_secret
 from discord.errors import ClientException
 
 client = discord.Client()
@@ -80,4 +82,6 @@ def query(payload, API_URL, headers):
     response = requests.request("POST", API_URL, headers=headers, data=data)
     return json.loads(response.content.decode("utf-8"))
 
-client.run(os.getenv("DISCORD_BOT_TOKEN"))
+secret_name = "DISCORD_BOT_TOKEN"
+bot_token = json.loads(get_secret(secret_name))[secret_name]
+client.run(bot_token)
