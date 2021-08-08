@@ -6,7 +6,13 @@
       "remote": "s3://{{ parameters.bucket }}/configuration/cloudformation.json"
     }
   },
-  "api_gateway": {},
+  "ec2": {
+    "discord_bot": {
+      "source": "src/discord-bot/",
+      "build": ".build/discord-bot/",
+      "remote": "s3://{{ parameters.bucket }}/source/discord-bot/"
+    }
+  },
   "ecs": {},
   "iam": {},
   "lambdas": {

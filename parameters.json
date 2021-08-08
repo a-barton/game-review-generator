@@ -3,5 +3,7 @@
     "region" : "ap-southeast-2",
     "bucket" : "game-review-generator",
     "batch_instance_type" : "g3s.xlarge",
-    "availability_zone" : "ap-southeast-2b"
+    "availability_zone" : "ap-southeast-2b",
+    "bot_instance_type" : "t2.micro",
+    "bot_instance_ami" : "ami-0aab712d6363da7f9"
 }

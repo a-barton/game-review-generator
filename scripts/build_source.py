@@ -23,8 +23,8 @@ def main(configuration_file):
     print("Building the lambdas...")
     build_definitions(definitions=config.lambdas, func=build_lambda)
 
-    #print("Building the cloudformation...")
-    #build_definitions(definitions=config.cloudformation)
+    print("Passing through discord-bot source...")
+    passthrough_build(source_path=config.ec2.discord_bot.source, build_path=config.ec2.discord_bot.build)
 
     end_time = datetime.now()
     time_diff = end_time - start_time
@@ -48,9 +48,8 @@ def main(configuration_file):
 def passthrough_build(source_path, build_path):
     """Simply copies files into the build directory without any special instructions."""
     build_dir, _ = os.path.split(build_path)
-    os.makedirs(build_dir, exist_ok=True)
-
-    shutil.copy2(source_path, build_path)
+    shutil.rmtree(build_path)
+    shutil.copytree(source_path, build_path)
     return
 
 
@@ -90,6 +89,7 @@ def build_lambda(source_path, build_path):
         )
 
     return
+
 
 ##########################
 ## __name__ == __main__ ##
