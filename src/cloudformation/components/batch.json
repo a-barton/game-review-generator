@@ -5,6 +5,12 @@
     },
     "BatchInstanceType": {
       "Type": "String"
+    },
+    "BatchJobDefinitionName": {
+      "Type": "String"
+    },
+    "BatchJobQueueName": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -82,7 +88,7 @@
       "Type": "AWS::Batch::JobDefinition",
       "Properties": {
         "Type": "container",
-        "JobDefinitionName": "BatchJobDefinition",
+        "JobDefinitionName": {"Ref" : "BatchJobDefinitionName"},
         "ContainerProperties": {
           "Image": {
             "Fn::Join": [
@@ -95,7 +101,7 @@
                 {
                   "Ref": "AWS::Region"
                 },
-                ".amazonaws.com/game-review-generator-batch:latest"
+                ".amazonaws.com/game-review-generator:latest"
               ]
             ]
           },
@@ -114,10 +120,6 @@
             }
           ],
           "Command": [
-            "conda",
-            "run",
-            "-n",
-            "grg",
             "python3",
             "generate_review.py"
           ],
@@ -136,7 +138,7 @@
     "BatchProcessingJobQueue": {
       "Type": "AWS::Batch::JobQueue",
       "Properties": {
-        "JobQueueName": "BatchProcessingJobQueue",
+        "JobQueueName": {"Ref" : "BatchJobQueueName"},
         "Priority": 1,
         "ComputeEnvironmentOrder": [
           {

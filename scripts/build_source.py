@@ -20,9 +20,6 @@ def main(configuration_file):
 
     config = load_config(file=configuration_file)
 
-    print("Building the lambdas...")
-    build_definitions(definitions=config.lambdas, func=build_lambda)
-
     print("Passing through discord-bot source...")
     passthrough_build(source_path=config.ec2.discord_bot.source, build_path=config.ec2.discord_bot.build)
 
@@ -59,34 +56,6 @@ def build_definitions(definitions, func=passthrough_build):
     for name, definition in definitions.items():
         print(f"\tBuilding {name}...")
         func(source_path=definition.source, build_path=definition.build)
-
-    return
-
-
-def build_lambda(source_path, build_path):
-    """Compiles a lambda directory into a zipped archive."""
-    HOME = os.getcwd()
-
-    with tempfile.TemporaryDirectory() as tmp_root:
-        tmpdir = os.path.join(tmp_root, "source")
-
-        shutil.copytree(source_path, tmpdir)
-
-        if "requirements.txt" in os.listdir(tmpdir):
-            os.chdir(tmpdir)
-            subprocess.check_output(
-                "pip install -r requirements.txt -t . --upgrade".split(" ")
-            )
-            os.chdir(HOME)
-
-        build_path_no_ext, _ = os.path.splitext(
-            build_path
-        )  # HACK: shutil appends .zip to path.
-        shutil.make_archive(
-            build_path_no_ext,
-            "zip",
-            tmpdir,
-        )
 
     return
 

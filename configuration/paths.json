@@ -12,14 +12,5 @@
       "build": ".build/discord-bot/",
       "remote": "s3://{{ parameters.bucket }}/source/discord-bot/"
     }
-  },
-  "ecs": {},
-  "iam": {},
-  "lambdas": {
-    "invoke_model": {
-      "source": "src/lambdas/invoke_model",
-      "build": ".build/lambdas/invoke_model.zip",
-      "remote": "s3://{{ parameters.bucket }}/source/lambdas/invoke_model.zip"
-    }
   }
 }

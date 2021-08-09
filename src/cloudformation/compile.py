@@ -16,9 +16,6 @@ from jinja2 import Environment, FileSystemLoader
 DIR = Path(os.path.split(__file__)[0])
 JINJA_VARIABLES = DIR / "globals.json"
 COMPONENTS_DIR = DIR / "components"
-MACROS_DIR = DIR / "macros"
-NO_TAGS_RESOURCES = ['AWS::ApiGateway::Resource', 'AWS::ApiGateway::Method', 
-'AWS::ApiGateway::Deployment', 'AWS::ApiGateway::Account', 'AWS::Lambda::Permission']
 
 JINJA = Environment(loader=FileSystemLoader(DIR))
 
