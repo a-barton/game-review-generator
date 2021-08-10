@@ -16,7 +16,7 @@ class ReviewModel:
         self.bucket = bucket
         self.block_size = block_size
 
-    def predict(self, prompt_input_path, prompt_output_path, max_length):
+    def predict(self, prompt_input_path, prompt_output_path, hyperparameters):
         LOGGER.info("Downloading model and input prompt")
         if self.location == 'aws':
             download_s3_folder(self.bucket, self.model_checkpoint, self.model_checkpoint)
@@ -27,7 +27,7 @@ class ReviewModel:
         LOGGER.info("Tokenizing prompt input")
         input = tokenizer.encode(prompt, return_tensors="pt")
         LOGGER.info("Running model inference on prompt")
-        generated = model.generate(input, max_length=max_length)
+        generated = model.generate(input, **hyperparameters)
         resulting_string = tokenizer.decode(generated.tolist()[0])
         LOGGER.info("Saving generated output")
         if "/" in prompt_output_path:
