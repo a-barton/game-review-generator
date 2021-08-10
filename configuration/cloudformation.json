@@ -26,5 +26,9 @@
     {
         "ParameterKey": "BotInstanceAmi",
         "ParameterValue": "{{ parameters.bot_instance_ami }}"
+    },
+    {
+        "ParameterKey": "ContainerRepoURI",
+        "ParameterValue": "{{ parameters.container_repo_uri }}"
     }
 ]

@@ -5,6 +5,7 @@ import requests
 import json
 import time
 import click
+import os
 
 from utils import get_secret
 
@@ -49,7 +50,8 @@ def main(bucket, batch_job_queue, batch_job_definition):
                 print(f"Job unsuccessful: {job_outcome}")
                 return
             
-            review = get_generated_review(bucket, inference_output_key)
+            os.makedirs(app_id, exist_ok=True)
+            review = get_generated_review(bucket, inference_output_key, app_id)
 
             await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
     
@@ -110,7 +112,7 @@ def wait_on_job_completion(job_id):
     pending_statuses = ["SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"]
     client = boto3.client("batch")
     while time.time() - start_time <= max_wait_time:
-        describe_jobs_resp = client.describe_jobs([job_id])
+        describe_jobs_resp = client.describe_jobs(jobs=[job_id])
         status = describe_jobs_resp['jobs'][0]['status']
         if status in pending_statuses:
             time.sleep(check_delay)
@@ -119,10 +121,10 @@ def wait_on_job_completion(job_id):
             return status
     return "TIMEOUT"
 
-def get_generated_review(bucket, inference_output_key):
+def get_generated_review(bucket, inference_output_key, app_id):
     s3_client = boto3.client("s3")
-    s3_client.download_file(bucket, inference_output_key, "generated_review/review.txt")
-    return open("generated_review/review.txt", "r").read()
+    s3_client.download_file(bucket, inference_output_key, f"{app_id}/review.txt")
+    return open(f"{app_id}/review.txt", "r").read()
 
 if __name__ == "__main__":
     main()

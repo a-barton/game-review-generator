@@ -5,5 +5,6 @@
     "batch_instance_type" : "g3s.xlarge",
     "availability_zone" : "ap-southeast-2b",
     "bot_instance_type" : "t2.micro",
-    "bot_instance_ami" : "ami-0aab712d6363da7f9"
+    "bot_instance_ami" : "ami-0aab712d6363da7f9",
+    "container_repo_uri" : "public.ecr.aws/o1t9q4k2/game-review-generator"
 }
