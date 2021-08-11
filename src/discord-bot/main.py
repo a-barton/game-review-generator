@@ -40,7 +40,7 @@ def main(bucket, batch_job_queue, batch_job_definition):
             print("Retrieved app name and description from Steam:")
             print(f"App Name = {app_name}\nApp Description = {app_desc}")
 
-            prompt = f"Game Description: {app_desc}\n Review: {app_name} is a game "
+            prompt = f"Game Description: {app_desc}\nReview: {app_name} is a game"
             put_prompt_in_s3(prompt, bucket, inference_input_key)
             
             job_id = start_batch_job(batch_job_queue, batch_job_definition)
@@ -51,7 +51,8 @@ def main(bucket, batch_job_queue, batch_job_definition):
                 return
             
             os.makedirs(app_id, exist_ok=True)
-            review = get_generated_review(bucket, inference_output_key, app_id)
+            inference_output = get_generated_review(bucket, inference_output_key, app_id)
+            review = clean_output(inference_output, prompt)
 
             await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
     
@@ -84,8 +85,10 @@ def get_app_details(app_id):
     return app_name, app_desc
 
 def put_prompt_in_s3(prompt, bucket, inference_input_key):
+    with open("prompt.txt", "w", encoding="utf-8") as writer:
+        writer.write(prompt)
     s3_client = boto3.client("s3")
-    s3_client.put_object(Body=prompt, Bucket=bucket, Key=inference_input_key)
+    s3_client.upload_file("prompt.txt", bucket, inference_input_key)
     return
 
 def start_batch_job(batch_job_queue, batch_job_definition):
@@ -125,6 +128,11 @@ def get_generated_review(bucket, inference_output_key, app_id):
     s3_client = boto3.client("s3")
     s3_client.download_file(bucket, inference_output_key, f"{app_id}/review.txt")
     return open(f"{app_id}/review.txt", "r").read()
+
+def clean_output(inference_output, prompt):
+    review = inference_output.replace(prompt, "")
+    review_clean = review.replace("Game Description:", "")
+    return review_clean
 
 if __name__ == "__main__":
     main()

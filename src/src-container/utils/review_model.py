@@ -7,9 +7,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingA
 class ReviewModel:
 
     def __init__(self, model_checkpoint=None, tokenizer_name=None, 
-        location='aws', bucket=None, block_size=128, **kwargs):
-        default_model = 'EleutherAI/gpt-neo-125M' if location=='aws' else 'gpt2'
-        default_tokenizer = 'gpt2'
+        location="aws", bucket=None, block_size=128, **kwargs):
+        default_model = "EleutherAI/gpt-neo-125M" if location=="aws" else "gpt2"
+        default_tokenizer = "gpt2"
         self.model_checkpoint = model_checkpoint or default_model
         self.tokenizer_name = tokenizer_name or default_tokenizer
         self.location = location
@@ -18,10 +18,10 @@ class ReviewModel:
 
     def predict(self, prompt_input_path, prompt_output_path, hyperparameters):
         LOGGER.info("Downloading model and input prompt")
-        if self.location == 'aws':
+        if self.location == "aws":
             download_s3_folder(self.bucket, self.model_checkpoint, self.model_checkpoint)
             download_s3_file(self.bucket, prompt_input_path, prompt_input_path)
-        prompt = open(prompt_input_path).read()
+        prompt = open(prompt_input_path, encoding="utf-8").read()
         tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_name)
         model = AutoModelForCausalLM.from_pretrained(self.model_checkpoint)
         LOGGER.info("Tokenizing prompt input")
@@ -33,8 +33,8 @@ class ReviewModel:
         if "/" in prompt_output_path:
             output_dir = "/".join(prompt_output_path.split("/")[:-1])
         os.makedirs(output_dir, exist_ok=True)
-        open(prompt_output_path, mode='w').write(resulting_string)
-        if self.location == 'aws':
+        open(prompt_output_path, mode="w", encoding="utf-8").write(resulting_string)
+        if self.location == "aws":
             upload_s3_file(self.bucket, prompt_output_path, prompt_output_path)
         return
 
@@ -67,15 +67,15 @@ class ReviewModel:
         trainer.train()
         LOGGER.info("Saving and uploading fine tuned model")
         trainer.save_model(model_save_path)
-        if self.location == 'aws':
+        if self.location == "aws":
             upload_s3_folder(self.bucket, model_save_path, model_save_path)
         return
 
 
     def _load_fine_tuning_data(self, data_path):
-        if self.location == 'aws':
+        if self.location == "aws":
             download_s3_file(self.bucket, data_path, data_path)
-        dataset = load_dataset('csv', data_files=data_path)
+        dataset = load_dataset("csv", data_files=data_path)
         return dataset
 
     def _tokenize_function(self, data, tokenizer):
@@ -85,7 +85,7 @@ class ReviewModel:
         tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_name, use_fast=True)
         tokenized_dataset = dataset.map(
             self._tokenize_function,
-            fn_kwargs={'tokenizer':tokenizer},
+            fn_kwargs={"tokenizer":tokenizer},
             batched=True, 
             num_proc=4, 
             remove_columns=["review"])
