@@ -26,6 +26,11 @@ class ReviewModel:
         model = AutoModelForCausalLM.from_pretrained(self.model_checkpoint)
         LOGGER.info("Tokenizing prompt input")
         input = tokenizer.encode(prompt, return_tensors="pt")
+        prompt_token_length = input.size()[1]
+        if "max_length" in hyperparameters.keys():
+            hyperparameters["max_length"] = hyperparameters["max_length"] + prompt_token_length
+        if "min_length" in hyperparameters.keys():
+            hyperparameters["min_length"] = hyperparameters["min_length"] + prompt_token_length
         LOGGER.info("Running model inference on prompt")
         generated = model.generate(input, **hyperparameters)
         resulting_string = tokenizer.decode(generated.tolist()[0])

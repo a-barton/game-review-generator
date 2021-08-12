@@ -61,12 +61,12 @@ def main(bucket, batch_job_queue, batch_job_definition):
     client.run(bot_token)
 
 def get_app_details(app_id):
-    app_details_url = "http://store.steampowered.com/api/appdetails?appids="
+    app_details_url = f"http://store.steampowered.com/api/appdetails?appids={app_id}&l=en"
     request_successful = False
     time_started = time.time()
     time_taken = 0
     while not request_successful:
-        base_resp = requests.get(app_details_url + app_id)
+        base_resp = requests.get(app_details_url)
         time_taken = time.time() - time_started
         if base_resp.status_code != 200:
             if time_taken > 10:
