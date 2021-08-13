@@ -4,34 +4,20 @@
         "ParameterValue": "{{ parameters.bucket }}"
     },
     {
-        "ParameterKey": "Region",
-        "ParameterValue": "{{ parameters.region }}"
-    },
-    {
         "ParameterKey": "AvailabilityZone",
         "ParameterValue": "{{ parameters.availability_zone }}"
     },
     {
-        "ParameterKey": "AccountID",
-        "ParameterValue": "{{ parameters.account_id }}"
-    },
-    {
-        "ParameterKey": "InvokeModelLambdaName",
-        "ParameterValue": "invoke-model"
-
-    },
-    {
-        "ParameterKey": "InvokeModelSourceKey",
-        "ParameterValue": "source/lambdas/invoke_model.zip"
-
-    },
-    {
-        "ParameterKey": "ReviewApiName",
-        "ParameterValue": "ReviewApi"
-    },
-    {
         "ParameterKey": "BatchInstanceType",
         "ParameterValue": "{{ parameters.batch_instance_type }}"
+    },
+    {
+        "ParameterKey": "BatchJobDefinitionName",
+        "ParameterValue": "ReviewModelBatchJobDefinition"
+    },
+    {
+        "ParameterKey": "BatchJobQueueName",
+        "ParameterValue": "ReviewModelBatchJobQueue"
     },
     {
         "ParameterKey": "BotInstanceType",
@@ -40,5 +26,9 @@
     {
         "ParameterKey": "BotInstanceAmi",
         "ParameterValue": "{{ parameters.bot_instance_ami }}"
+    },
+    {
+        "ParameterKey": "ContainerRepoURI",
+        "ParameterValue": "{{ parameters.container_repo_uri }}"
     }
 ]

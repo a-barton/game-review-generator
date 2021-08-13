@@ -8,6 +8,12 @@
     },
     "BotInstanceAmi": {
       "Type": "String"
+    },
+    "BatchJobQueueName": {
+      "Type": "String"
+    },
+    "BatchJobDefinitionName": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -28,7 +34,12 @@
                 { "Ref" : "Bucket" },
                 "/source/discord-bot ./discord-bot\n",
                 "pip3 install -r discord-bot/requirements.txt\n",
-                "python3 discord-bot/main.py"
+                "python3 discord-bot/main.py --bucket ",
+                { "Ref" : "Bucket" },
+                " --batch_job_queue ",
+                { "Ref" : "BatchJobQueueName" },
+                " --batch_job_definition ",
+                { "Ref" : "BatchJobDefinitionName"}
               ]]
             }
         }
@@ -53,7 +64,8 @@
         },
         "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-          "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+          "arn:aws:iam::aws:policy/SecretsManagerReadWrite",
+          "arn:aws:iam::aws:policy/AWSBatchFullAccess"
         ]
       }
     },
