@@ -109,7 +109,7 @@ def start_batch_job(batch_job_queue, batch_job_definition):
     return batch_resp["jobId"]
 
 def wait_on_job_completion(job_id):
-    max_wait_time = 900
+    max_wait_time = 1200
     check_delay = 2
     start_time = time.time()
     pending_statuses = ["SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"]
