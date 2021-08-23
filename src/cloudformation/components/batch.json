@@ -97,11 +97,11 @@
           "ResourceRequirements": [
             {
               "Type": "VCPU",
-              "Value": "4"
+              "Value": "8"
             },
             {
               "Type": "MEMORY",
-              "Value": "16384"
+              "Value": "24576"
             },
             {
               "Type": "GPU",
@@ -147,7 +147,7 @@
           "Type": "SPOT",
           "MinvCpus": 0,
           "DesiredvCpus": 0,
-          "MaxvCpus": 4,
+          "MaxvCpus": 8,
           "InstanceTypes": [
             {
               "Ref": "BatchInstanceType"

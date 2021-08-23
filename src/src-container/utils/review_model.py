@@ -60,7 +60,9 @@ class ReviewModel:
             "model-training",
             evaluation_strategy = "epoch",
             learning_rate=2e-5,
-            weight_decay=0.01
+            weight_decay=0.01,
+            fp16=True,
+            save_steps=10000
         )
         trainer = Trainer(
             model=model,
