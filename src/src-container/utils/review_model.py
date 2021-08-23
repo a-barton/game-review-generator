@@ -7,8 +7,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingA
 class ReviewModel:
 
     def __init__(self, model_checkpoint=None, tokenizer_name=None, 
-        location="aws", bucket=None, block_size=1024, **kwargs):
-        default_model = "EleutherAI/gpt-neo-1.3B" if location=="aws" else "gpt2"
+        location="aws", bucket=None, block_size=128, **kwargs):
+        default_model = "EleutherAI/gpt-neo-125M" if location=="aws" else "gpt2"
         default_tokenizer = "gpt2"
         self.model_checkpoint = model_checkpoint or default_model
         self.tokenizer_name = tokenizer_name or default_tokenizer
@@ -61,7 +61,8 @@ class ReviewModel:
             evaluation_strategy = "epoch",
             learning_rate=2e-5,
             weight_decay=0.01,
-            fp16=True
+            fp16=True,
+            save_steps=10000
         )
         trainer = Trainer(
             model=model,
