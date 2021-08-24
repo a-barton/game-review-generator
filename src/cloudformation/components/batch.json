@@ -6,7 +6,10 @@
     "BatchInstanceType": {
       "Type": "String"
     },
-    "BatchJobDefinitionName": {
+    "BatchPredictJobDefinitionName": {
+      "Type": "String"
+    },
+    "BatchTrainJobDefinitionName": {
       "Type": "String"
     },
     "BatchJobQueueName": {
@@ -87,11 +90,11 @@
         }
       }
     },
-    "BatchProcessingJobDefinition": {
+    "BatchPredictJobDefinition": {
       "Type": "AWS::Batch::JobDefinition",
       "Properties": {
         "Type": "container",
-        "JobDefinitionName": {"Ref" : "BatchJobDefinitionName"},
+        "JobDefinitionName": {"Ref" : "BatchPredictJobDefinitionName"},
         "ContainerProperties": {
           "Image": { "Ref": "ContainerRepoURI" },
           "ResourceRequirements": [
@@ -116,6 +119,47 @@
             {
               "Name": "S3_BUCKET",
               "Value": {"Ref": "Bucket"}
+            }
+          ]
+        },
+        "RetryStrategy": {
+          "Attempts": 1
+        }
+      }
+    },
+    "BatchTrainJobDefinition": {
+      "Type": "AWS::Batch::JobDefinition",
+      "Properties": {
+        "Type": "container",
+        "JobDefinitionName": {"Ref" : "BatchTrainJobDefinitionName"},
+        "ContainerProperties": {
+          "Image": { "Ref": "ContainerRepoURI" },
+          "ResourceRequirements": [
+            {
+              "Type": "VCPU",
+              "Value": "8"
+            },
+            {
+              "Type": "MEMORY",
+              "Value": "24576"
+            },
+            {
+              "Type": "GPU",
+              "Value": "1"
+            }
+          ],
+          "Command": [
+            "python3",
+            "generate_review.py"
+          ],
+          "Environment": [
+            {
+              "Name": "S3_BUCKET",
+              "Value": {"Ref": "Bucket"}
+            },
+            {
+              "Name": "MODE",
+              "Value": "train"
             }
           ]
         },
@@ -211,9 +255,9 @@
         "Ref": "BatchProcessingJobQueue"
       }
     },
-    "BatchProcessingJobDefinitionArn": {
+    "BatchPredictJobDefinitionArn": {
       "Value": {
-        "Ref": "BatchProcessingJobDefinition"
+        "Ref": "BatchPredictJobDefinition"
       }
     },
     "BucketName": {

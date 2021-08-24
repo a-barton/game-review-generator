@@ -40,7 +40,8 @@ def main(bucket, batch_job_queue, batch_job_definition):
             print("Retrieved app name and description from Steam:")
             print(f"App Name = {app_name}\nApp Description = {app_desc}")
 
-            prompt = f"Game Description: {app_desc}\nReview: {app_name} is a game"
+            review_start = f"{app_name} is a game"
+            prompt = f"Game Description: {app_desc}\nReview: {review_start}"
             put_prompt_in_s3(prompt, bucket, inference_input_key)
             
             job_id = start_batch_job(batch_job_queue, batch_job_definition)
@@ -52,7 +53,7 @@ def main(bucket, batch_job_queue, batch_job_definition):
             
             os.makedirs(app_id, exist_ok=True)
             inference_output = get_generated_review(bucket, inference_output_key, app_id)
-            review = clean_output(inference_output, prompt)
+            review = clean_output(inference_output, prompt, review_start)
 
             await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
     
@@ -129,9 +130,11 @@ def get_generated_review(bucket, inference_output_key, app_id):
     s3_client.download_file(bucket, inference_output_key, f"{app_id}/review.txt")
     return open(f"{app_id}/review.txt", "r").read()
 
-def clean_output(inference_output, prompt):
-    review = inference_output.replace(prompt, "")
+def clean_output(inference_output, prompt, review_start):
+    review = inference_output.replace(prompt, review_start)
     review_clean = review.replace("Game Description:", "")
+    last_full_stop_idx = review_clean.rfind(".")
+    review_clean = review_clean[:last_full_stop_idx + 1]
     return review_clean
 
 if __name__ == "__main__":

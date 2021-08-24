@@ -12,8 +12,12 @@
         "ParameterValue": "{{ parameters.batch_instance_type }}"
     },
     {
-        "ParameterKey": "BatchJobDefinitionName",
-        "ParameterValue": "ReviewModelBatchJobDefinition"
+        "ParameterKey": "BatchPredictJobDefinitionName",
+        "ParameterValue": "ReviewModelBatchPredictJobDefinition"
+    },
+    {
+        "ParameterKey": "BatchTrainJobDefinitionName",
+        "ParameterValue": "ReviewModelBatchTrainJobDefinition"
     },
     {
         "ParameterKey": "BatchJobQueueName",

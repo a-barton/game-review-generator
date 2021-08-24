@@ -12,7 +12,7 @@
     "BatchJobQueueName": {
       "Type": "String"
     },
-    "BatchJobDefinitionName": {
+    "BatchPredictJobDefinitionName": {
       "Type": "String"
     }
   },
@@ -39,7 +39,7 @@
                 " --batch_job_queue ",
                 { "Ref" : "BatchJobQueueName" },
                 " --batch_job_definition ",
-                { "Ref" : "BatchJobDefinitionName"}
+                { "Ref" : "BatchPredictJobDefinitionName"}
               ]]
             }
         }
