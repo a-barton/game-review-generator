@@ -12,7 +12,7 @@
     "BatchJobQueueName": {
       "Type": "String"
     },
-    "BatchJobDefinitionName": {
+    "BatchPredictJobDefinitionName": {
       "Type": "String"
     }
   },
@@ -32,14 +32,17 @@
                 "yum install -y python3\n",
                 "aws s3 sync s3://",
                 { "Ref" : "Bucket" },
-                "/source/discord-bot ./discord-bot\n",
+                "/source/discord-bot ./home/ec2-user/discord-bot\n",
+                "cd home/ec2-user\n",
                 "pip3 install -r discord-bot/requirements.txt\n",
                 "python3 discord-bot/main.py --bucket ",
                 { "Ref" : "Bucket" },
                 " --batch_job_queue ",
                 { "Ref" : "BatchJobQueueName" },
                 " --batch_job_definition ",
-                { "Ref" : "BatchJobDefinitionName"}
+                { "Ref" : "BatchPredictJobDefinitionName" },
+                " --region ",
+                { "Ref" : "AWS::Region" }
               ]]
             }
         }

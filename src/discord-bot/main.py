@@ -13,7 +13,8 @@ from utils import get_secret
 @click.option("--bucket", "bucket", required=True)
 @click.option("--batch_job_queue", "batch_job_queue", required=True)
 @click.option("--batch_job_definition", "batch_job_definition", required=True)
-def main(bucket, batch_job_queue, batch_job_definition):
+@click.option("--region", "region", required=True)
+def main(bucket, batch_job_queue, batch_job_definition, region):
 
     client = discord.Client()
     steam_url_regex = re.compile(r"(?:https://store.steampowered.com/app/)([0-9]+)(?:/)")
@@ -40,11 +41,12 @@ def main(bucket, batch_job_queue, batch_job_definition):
             print("Retrieved app name and description from Steam:")
             print(f"App Name = {app_name}\nApp Description = {app_desc}")
 
-            prompt = f"Game Description: {app_desc}\nReview: {app_name} is a game"
+            review_start = f"{app_name} is a game"
+            prompt = f"Game Description: {app_desc}\nReview: {review_start}"
             put_prompt_in_s3(prompt, bucket, inference_input_key)
             
-            job_id = start_batch_job(batch_job_queue, batch_job_definition)
-            job_outcome = wait_on_job_completion(job_id)
+            job_id = start_batch_job(batch_job_queue, batch_job_definition, region)
+            job_outcome = wait_on_job_completion(job_id, region)
 
             if job_outcome == "FAILED" or job_outcome == "TIMEOUT":
                 print(f"Job unsuccessful: {job_outcome}")
@@ -52,7 +54,7 @@ def main(bucket, batch_job_queue, batch_job_definition):
             
             os.makedirs(app_id, exist_ok=True)
             inference_output = get_generated_review(bucket, inference_output_key, app_id)
-            review = clean_output(inference_output, prompt)
+            review = clean_output(inference_output, prompt, review_start)
 
             await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
     
@@ -91,8 +93,8 @@ def put_prompt_in_s3(prompt, bucket, inference_input_key):
     s3_client.upload_file("prompt.txt", bucket, inference_input_key)
     return
 
-def start_batch_job(batch_job_queue, batch_job_definition):
-    batch_client = boto3.client("batch")
+def start_batch_job(batch_job_queue, batch_job_definition, region):
+    batch_client = boto3.client("batch", region_name=region)
     batch_resp = batch_client.submit_job(
         jobName=batch_job_queue, 
         jobQueue=batch_job_queue, 
@@ -108,12 +110,12 @@ def start_batch_job(batch_job_queue, batch_job_definition):
     )
     return batch_resp["jobId"]
 
-def wait_on_job_completion(job_id):
+def wait_on_job_completion(job_id, region):
     max_wait_time = 1200
     check_delay = 2
     start_time = time.time()
     pending_statuses = ["SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"]
-    client = boto3.client("batch")
+    client = boto3.client("batch", region_name=region)
     while time.time() - start_time <= max_wait_time:
         describe_jobs_resp = client.describe_jobs(jobs=[job_id])
         status = describe_jobs_resp['jobs'][0]['status']
@@ -129,9 +131,11 @@ def get_generated_review(bucket, inference_output_key, app_id):
     s3_client.download_file(bucket, inference_output_key, f"{app_id}/review.txt")
     return open(f"{app_id}/review.txt", "r").read()
 
-def clean_output(inference_output, prompt):
-    review = inference_output.replace(prompt, "")
+def clean_output(inference_output, prompt, review_start):
+    review = inference_output.replace(prompt, review_start)
     review_clean = review.replace("Game Description:", "")
+    last_full_stop_idx = review_clean.rfind(".")
+    review_clean = review_clean[:last_full_stop_idx + 1]
     return review_clean
 
 if __name__ == "__main__":
