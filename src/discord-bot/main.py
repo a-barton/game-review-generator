@@ -59,7 +59,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
                 review = clean_output(inference_output, prompt, review_start)
 
                 if "game-review-archive" in [channel.name for channel in message.guild.channels]:
-                    channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive')
+                    channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive').id
                     channel = client.get_channel(channel_id)
                     await channel.send(f"Archived review for {app_name}:\n```" + review + "```")
                 await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
