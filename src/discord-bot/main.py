@@ -6,6 +6,7 @@ import json
 import time
 import click
 import os
+import random
 
 from utils import get_secret
 
@@ -34,29 +35,38 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
             await message.reply(f"Hello {message.author.display_name}!")
 
         if message.content.startswith("https://store.steampowered.com/app/"):
-            print("Detected Steam URL")
-            app_id = re.match(steam_url_regex, message.content).group(1)
-            print("Extracted app ID from URL")
-            app_name, app_desc = get_app_details(app_id)
-            print("Retrieved app name and description from Steam:")
-            print(f"App Name = {app_name}\nApp Description = {app_desc}")
+            try:
+                print("Detected Steam URL")
+                app_id = re.match(steam_url_regex, message.content).group(1)
+                print("Extracted app ID from URL")
+                app_name, app_desc = get_app_details(app_id)
+                print("Retrieved app name and description from Steam:")
+                print(f"App Name = {app_name}\nApp Description = {app_desc}")
 
-            review_start = f"{app_name} is a game"
-            prompt = f"Game Description: {app_desc}\nReview: {review_start}"
-            put_prompt_in_s3(prompt, bucket, inference_input_key)
-            
-            job_id = start_batch_job(batch_job_queue, batch_job_definition, region)
-            job_outcome = wait_on_job_completion(job_id, region)
+                review_start = get_random_review_start(app_name)
+                prompt = f"Game Description: {app_desc}\nReview: {review_start}"
+                put_prompt_in_s3(prompt, bucket, inference_input_key)
 
-            if job_outcome == "FAILED" or job_outcome == "TIMEOUT":
-                print(f"Job unsuccessful: {job_outcome}")
+                job_id = start_batch_job(batch_job_queue, batch_job_definition, region)
+                job_outcome = wait_on_job_completion(job_id, region)
+
+                if job_outcome == "FAILED" or job_outcome == "TIMEOUT":
+                    print(f"Job unsuccessful: {job_outcome}")
+                    return
+
+                os.makedirs(app_id, exist_ok=True)
+                inference_output = get_generated_review(bucket, inference_output_key, app_id)
+                review = clean_output(inference_output, prompt, review_start)
+
+                if "game-review-archive" in [channel.name for channel in message.guild.channels]:
+                    channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive')
+                    channel = client.get_channel(channel_id)
+                    await channel.send(f"Archived review for {app_name}:\n```" + review + "```")
+                await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
+            except Exception as e:
+                print("Exception occurred while processing Steam link:")
+                print(str(e))
                 return
-            
-            os.makedirs(app_id, exist_ok=True)
-            inference_output = get_generated_review(bucket, inference_output_key, app_id)
-            review = clean_output(inference_output, prompt, review_start)
-
-            await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
     
     secret_name = "DISCORD_BOT_TOKEN"
     bot_token = json.loads(get_secret(secret_name))[secret_name]
@@ -85,6 +95,25 @@ def get_app_details(app_id):
     app_name = app_details_data["name"]
     app_desc = re.sub("<[^<]+?>", " ", app_details_data["detailed_description"])
     return app_name, app_desc
+
+def get_random_review_start(app_name):
+    review_starts = [
+        f"{app_name} is a game",
+        f"I've been playing {app_name} for a few days now and",
+        f"I can guarantee you'll love {app_name} because",
+        f"If you ever see {app_name} on sale",
+        f"Where do I even start when it comes to {app_name}, it's just",
+        f"Definitely recommend {app_name}, and here's why:",
+        f"{app_name} was on my wish list for a while and",
+        f"I heard about {app_name} from a friend and",
+        f"I bought {app_name} hoping for",
+        f"{app_name} was gifted to me and",
+        f"{app_name} is the Citizen Kane of video games.  It",
+        f"I really wanted to like {app_name}, but"
+    ]
+    random_start = random.choice(review_starts)
+    return random_start
+
 
 def put_prompt_in_s3(prompt, bucket, inference_input_key):
     with open("prompt.txt", "w", encoding="utf-8") as writer:
