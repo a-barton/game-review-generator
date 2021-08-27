@@ -120,6 +120,7 @@ def put_prompt_in_s3(prompt, bucket, inference_input_key):
         writer.write(prompt)
     s3_client = boto3.client("s3")
     s3_client.upload_file("prompt.txt", bucket, inference_input_key)
+    os.remove("prompt.txt")
     return
 
 def start_batch_job(batch_job_queue, batch_job_definition, region):
@@ -158,7 +159,10 @@ def wait_on_job_completion(job_id, region):
 def get_generated_review(bucket, inference_output_key, app_id):
     s3_client = boto3.client("s3")
     s3_client.download_file(bucket, inference_output_key, f"{app_id}/review.txt")
-    return open(f"{app_id}/review.txt", "r").read()
+    generated_output = open(f"{app_id}/review.txt", "r").read()
+    os.remove(f"{app_id}/review.txt")
+    os.removedirs(f"{app_id}")
+    return generated_output
 
 def clean_output(inference_output, prompt, review_start):
     review = inference_output.replace(prompt, review_start)
