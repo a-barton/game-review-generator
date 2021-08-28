@@ -34,3 +34,9 @@ In order to clone and work with this repo (including deploying the solution stac
 4. Initialise the repo by opening a terminal at the root and running `make init`
     * This will setup a new Conda virtual environment and install required Python libraries.
     * It will also source the fine-tuned game review model and place it in your nominated S3 bucket.
+
+At this point, assuming you have the Discord bot created and the bot token in AWS Secrets Manager, you can **deploy the model and bot stack by running `make all`**.
+
+## **Architecture**
+
+![Solution Architecture](docs/architecture.png "Solution Architecture")
