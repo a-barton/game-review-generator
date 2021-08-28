@@ -11,8 +11,9 @@ mode = os.environ.get("MODE", None)
 hyperparameters = {
     "max_length" : 300,
     "min_length" : 80,
-    "repetition_penalty" : 1.4,
-    "no_repeat_ngram_size" : 4
+    "repetition_penalty" : 1.6,
+    "no_repeat_ngram_size" : 4,
+    "temperature" : 1.5
 }
 
 if location == "local":
