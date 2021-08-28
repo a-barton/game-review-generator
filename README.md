@@ -2,6 +2,8 @@
 
 An exercise in deploying a large scale language/transformer model ([GPT-Neo](https://github.com/EleutherAI/gpt-neo) - utilised via the [Huggingface Transformers library](https://huggingface.co/transformers/)) in a serverless cloud architecture, in order to automatically generate video game reviews from a prompt with the game description.  Also includes a stack for a Discord bot deployed on a cloud server that listens for Steam game URL links in Discord messages, extracts the game description from Steam's website and uses it as a prompt to invoke the model pipeline, and then replies to the Discord message with a generated review for the linked game.
 
+![Example Discord bot review response](docs/witcher-review.png "Example Discord bot review response")
+
 ## **Pre-requisites**
 
 ### **Assumed Existing Components**
