@@ -7,14 +7,17 @@ export APPLICATION_HOME := ${PWD}
 export CONTAINER_NAME := ${PROJECT_NAME}
 export CONTAINER_VERSION := latest
 export CONTAINER_TEST_DIR := ${PWD}/tests/test_container_mount
-
-export S3_BUCKET := game-review-generator
+export MODEL_SOURCE_BUCKET := game-review-generator-fine-tuned-model
 
 ##############################
 ## Install / Initialisation ##
 ##############################
 
-init:
+bucket-setup:
+	@echo "Retrieving model and syncing to provided S3 bucket..."
+	@python scripts/bucket_setup.py --parameters parameters.json --model_source_bucket ${MODEL_SOURCE_BUCKET}
+
+init: bucket-setup
 	conda env create -f environment.yaml -n $(PROJECT_ALIAS) \
 		|| \
 	conda env update -f environment.yaml -n $(PROJECT_ALIAS)
@@ -22,16 +25,6 @@ init:
 environment.yaml:
 	conda env export --no-builds > environment.yaml
 .PHONY: environment.yaml
-
-###############
-## Utilities ##
-###############
-
-format:
-	black .
-
-lambda:
-	python scripts/scaffold.py lambda
 
 
 ###########
