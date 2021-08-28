@@ -8,7 +8,7 @@ An exercise in deploying a large scale language/transformer model ([GPT-Neo](htt
 
 ### **Assumed Existing Components**
 
-Whilst this repo manages a Cloudformation template/stack with the majority of the components needed for the model stack and Discord bot stack, it assumes you already have the following things created:
+Whilst this repo manages a Cloudformation template/stack with the majority of the components needed for the model stack and Discord bot stack, **it assumes you already have the following things created**:
 
 1. An AWS account (naturally) - one for which you have admin access
 2. An S3 bucket in your AWS account to house build artifacts/model artifacts/modelling data (you must specify the name of this bucket in the `parameters.json` config file at the root of the repo)
@@ -17,7 +17,7 @@ Whilst this repo manages a Cloudformation template/stack with the majority of th
 
 ### **Development Environment Requirements**
 
-In order to clone and work with this repo (including deploying the solution stack to AWS), your development environment will need the following:
+In order to clone and work with this repo (including deploying the solution stack to AWS), **your development environment will need the following**:
 
 1. This repo is intended to be used on a Unix based system (e.g. Ubuntu) - setup, build and deployment is all managed via a [Makefile](https://opensource.com/article/18/8/what-how-makefile)
 2. Python dependancies are versioned via a conda virtual environment - I recommend installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
@@ -32,13 +32,17 @@ In order to clone and work with this repo (including deploying the solution stac
     2. Modify the `availability_zone` parameter value in `parameters.json` to reference your desired AWS availability zone - you must ensure that the instance type specified in the `batch_instance_type` parameter is one that is [available in the availability zone](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html) you select
 3. Open the Makefile at the root of the repo and address the following:
     1. Modify the `PROJECT_NAME` (defined at the top) to a different name of your choosing
-    2. Also modify the `PROJECT_ALIAS` in line with the change you made to the `PROJECT_NAME`
+    2. Also modify the `PROJECT_ALIAS` in line with the change you made to the `PROJECT_NAME` (you can choose an abbreviated project slug/initialism similar to how I abbreviated `game-reveiw-generator` to `grg`)
 4. Initialise the repo by opening a terminal at the root and running `make init`
-    * This will setup a new Conda virtual environment and install required Python libraries.
-    * It will also source the fine-tuned game review model and place it in your nominated S3 bucket.
+    * This will setup a new Conda virtual environment and install required Python libraries
+    * It will also source the fine-tuned game review model and place it in your nominated S3 bucket
 
 At this point, assuming you have the Discord bot created and the bot token in AWS Secrets Manager, you can **deploy the model and bot stack by running `make all`**.
 
 ## **Architecture**
 
 ![Solution Architecture](docs/architecture.png "Solution Architecture")
+
+Logic for the Discord bot is deployed as a Python script (utilising the [discordpy library](https://discordpy.readthedocs.io/en/stable/)) running on an EC2 instance.  This instance writes prompts to and retrieves generated outputs from the S3 bucket you nominate.
+
+The model container is run as an [AWS Batch job](https://aws.amazon.com/batch/) utilising spot EC2 instances (for cost saving purposes) - the job is invoked by the bot Python script, and retrieves input from and writes output to the same S3 bucket as the bot Python script.  End to end, the total wait time from the trigger Discord message through to the bot response Discord reply message usually comes out between 5-10 minutes.
