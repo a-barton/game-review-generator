@@ -3,7 +3,7 @@
 The repository comes with the file `/parameters.json` which defines the 
 parameters to be passed into the files under the `/configuration/` directory.
 
-This compiler uses Jinja2 for it's compilation needs. Any valid Jinja code will
+This compiler can handle Jinja templates using Jinja2. Any valid Jinja code will
 also be valid here.
 
 There is also a special variable called `parameters` which provides an interface
@@ -11,7 +11,6 @@ into the `parameters.json` file as a dot-notation accessable dictionary.
 """
 
 import json
-import re
 import os
 
 import click
