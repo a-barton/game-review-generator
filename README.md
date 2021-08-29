@@ -30,7 +30,7 @@ In order to clone and work with this repo (including deploying the solution stac
 2. Open the `parameters.json` file at the root of the repo and address the following:
     1. Modify the `bucket` parameter value in `parameters.json` to reference your desired AWS S3 bucket
     2. Modify the `availability_zone` parameter value in `parameters.json` to reference your desired AWS availability zone - you must ensure that the instance type specified in the `batch_instance_type` parameter is one that is [available in the availability zone](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html) you select
-3. Open the Makefile at the root of the repo and address the following:
+3. Open the `Makefile` at the root of the repo and address the following:
     1. Modify the `PROJECT_NAME` (defined at the top) to a different name of your choosing
     2. Also modify the `PROJECT_ALIAS` in line with the change you made to the `PROJECT_NAME` (you can choose an abbreviated project slug/initialism similar to how I abbreviated `game-reveiw-generator` to `grg`)
 4. Initialise the repo by opening a terminal at the root and running `make init`
@@ -46,3 +46,39 @@ At this point, assuming you have the Discord bot created and the bot token in AW
 Logic for the Discord bot is deployed as a Python script (utilising the [discordpy library](https://discordpy.readthedocs.io/en/stable/)) running on an EC2 instance.  This instance writes prompts to and retrieves generated outputs from the S3 bucket you nominate.
 
 The model container is run as an [AWS Batch job](https://aws.amazon.com/batch/) utilising spot EC2 instances (for cost saving purposes) - the job is invoked by the bot Python script, and retrieves input from and writes output to the same S3 bucket as the bot Python script.  End to end, the total wait time from the trigger Discord message through to the bot response Discord reply message usually comes out between 5-10 minutes.
+
+## **Repo Structure & Usage**
+
+### **Parameters & Configuration**
+
+As mentioned in the quickstart, there is a `parameters.json` config file at the root of the repo through which you can control:
+
+* Target S3 bucket
+  * This is assumed to be pre-existing, and you MUST specify your own bucket here
+* AWS availability zone to deploy batch instances in
+  * As noted, this AZ must support the instance type that the Batch job will try to launch
+* Instance type that Batch job launches
+  * I have been using a g4dn instance to take advantage of GPU accelerated inference
+* Instance type that the Discord bot runs on
+* AMI of bot instance (defaults to Amazon Linux 2)
+* URI of Elastic Container Registry repository that Batch will source the model container from at runtime
+  * I have published my version of the model container to a public ECR repo and this parameter points at that repo by default
+  * If you make changes to the container or want to reference a different repo for the model container, you can change this parameter
+
+As noted in the quickstart, there are also the `PROJECT_NAME` and `PROJECT_ALIAS` parameters set at the start of the `Makefile` - make sure to change these to your own values.
+
+Finally, there are also a couple of parameters in the `configuration/cloudformation.json` file that control the names of several Cloudformation resources (those that aren't injected directly from the `parameters.json` file).  You may change these if you like, but they will work fine as is.
+
+### **Using the Makefile**
+
+From a terminal at the root of the repo, you can invoke any of the `Makefile` targets by running `make <target_name>`.  Here is a quick walkthrough of them:
+
+* `make init` - creates a conda environment and installs required Python dependancies, also sources the fine-tuned model and places it in your nominated S3 bucket
+* `make environment.yaml` - exports the current state of your active conda environment to the environment.yaml file, you can use these to version control your environment if you install additional dependancies during the course of development
+* `make container` - builds the container image according to the Dockerfile recipe in `src/src-container/`
+* `make configuration` - builds the `cloudformation.json` parameters file and `paths.json` file by injecting the values from the `parameters.json` file, places the results in a `.build/configuration/` directory
+* `make build` - compiles all Clouformation components into a consolidated `cfn.json` template and compiles Discord bot and container source code into the `.build` directory
+* `make remote` - syncs the `.build/` artifacts to the S3 bucket
+* `make infrastructure` - executes creation of a Cloudformation stack according to the `cfn.json` template built earlier
+* `make all` - convenience target that runs `configuration`, `build`, `remote` and `infrastructure` all at once
+* `make destroy` - destroys the Cloudformation stack if it exists (you need to run this before redeploying the stack, and make sure all resources finish deleting)
