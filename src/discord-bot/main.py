@@ -1,12 +1,13 @@
 import discord
 import boto3
 import re
-import requests
 import json
 import time
 import click
 import os
 import random
+import asyncio
+import aiohttp
 
 from utils import get_secret
 
@@ -39,24 +40,24 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
                 print("Detected Steam URL")
                 app_id = re.match(steam_url_regex, message.content).group(1)
                 print("Extracted app ID from URL")
-                app_name, app_desc = get_app_details(app_id)
+                app_name, app_desc = await get_app_details(app_id)
                 print("Retrieved app name and description from Steam:")
                 print(f"App Name = {app_name}\nApp Description = {app_desc}")
 
-                review_start = get_random_review_start(app_name)
+                review_start = await get_random_review_start(app_name)
                 prompt = f"Game Description: {app_desc}\nReview: {review_start}"
-                put_prompt_in_s3(prompt, bucket, inference_input_key)
+                await put_prompt_in_s3(prompt, bucket, inference_input_key)
 
-                job_id = start_batch_job(batch_job_queue, batch_job_definition, region)
-                job_outcome = wait_on_job_completion(job_id, region)
+                job_id = await start_batch_job(batch_job_queue, batch_job_definition, region)
+                job_outcome = await wait_on_job_completion(job_id, region)
 
                 if job_outcome == "FAILED" or job_outcome == "TIMEOUT":
                     print(f"Job unsuccessful: {job_outcome}")
                     return
 
                 os.makedirs(app_id, exist_ok=True)
-                inference_output = get_generated_review(bucket, inference_output_key, app_id)
-                review = clean_output(inference_output, prompt, review_start)
+                inference_output = await get_generated_review(bucket, inference_output_key, app_id)
+                review = await clean_output(inference_output, prompt, review_start)
 
                 if "game-review-archive" in [channel.name for channel in message.guild.channels]:
                     channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive').id
@@ -72,31 +73,33 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
     bot_token = json.loads(get_secret(secret_name))[secret_name]
     client.run(bot_token)
 
-def get_app_details(app_id):
+async def get_app_details(app_id):
     app_details_url = f"http://store.steampowered.com/api/appdetails?appids={app_id}&l=en"
     request_successful = False
     time_started = time.time()
     time_taken = 0
     while not request_successful:
-        base_resp = requests.get(app_details_url)
-        time_taken = time.time() - time_started
-        if base_resp.status_code != 200:
-            if time_taken > 10:
-                print("Steam app details request timing out")
-                return None, None
-            time.sleep(0.2)
-            continue
-        else:
-            request_successful = True
-            app_details = base_resp.json()[app_id]
-            if not app_details.get("data", None):
-                return None, None
-            app_details_data = app_details["data"]
+        async with aiohttp.ClientSession() as session:
+            async with session.get(app_details_url) as base_resp:
+                time_taken = time.time() - time_started
+                if base_resp.status != 200:
+                    if time_taken > 10:
+                        print("Steam app details request timing out")
+                        return None, None
+                    await asyncio.sleep(0.2)
+                    continue
+                else:
+                    request_successful = True
+                    base_resp_json = await base_resp.json()
+                    app_details = base_resp_json[app_id]
+                    if not app_details.get("data", None):
+                        return None, None
+                    app_details_data = app_details["data"]
     app_name = app_details_data["name"]
     app_desc = re.sub("<[^<]+?>", " ", app_details_data["detailed_description"])
     return app_name, app_desc
 
-def get_random_review_start(app_name):
+async def get_random_review_start(app_name):
     review_starts = [
         f"{app_name} is a game",
         f"I've been playing {app_name} for a few days now and",
@@ -115,7 +118,7 @@ def get_random_review_start(app_name):
     return random_start
 
 
-def put_prompt_in_s3(prompt, bucket, inference_input_key):
+async def put_prompt_in_s3(prompt, bucket, inference_input_key):
     with open("prompt.txt", "w", encoding="utf-8") as writer:
         writer.write(prompt)
     s3_client = boto3.client("s3")
@@ -123,7 +126,7 @@ def put_prompt_in_s3(prompt, bucket, inference_input_key):
     os.remove("prompt.txt")
     return
 
-def start_batch_job(batch_job_queue, batch_job_definition, region):
+async def start_batch_job(batch_job_queue, batch_job_definition, region):
     batch_client = boto3.client("batch", region_name=region)
     batch_resp = batch_client.submit_job(
         jobName=batch_job_queue, 
@@ -140,7 +143,7 @@ def start_batch_job(batch_job_queue, batch_job_definition, region):
     )
     return batch_resp["jobId"]
 
-def wait_on_job_completion(job_id, region):
+async def wait_on_job_completion(job_id, region):
     max_wait_time = 1200
     check_delay = 2
     start_time = time.time()
@@ -150,13 +153,13 @@ def wait_on_job_completion(job_id, region):
         describe_jobs_resp = client.describe_jobs(jobs=[job_id])
         status = describe_jobs_resp['jobs'][0]['status']
         if status in pending_statuses:
-            time.sleep(check_delay)
+            await asyncio.sleep(check_delay)
             continue
         if status == "SUCCEEDED" or status == "FAILED":
             return status
     return "TIMEOUT"
 
-def get_generated_review(bucket, inference_output_key, app_id):
+async def get_generated_review(bucket, inference_output_key, app_id):
     s3_client = boto3.client("s3")
     s3_client.download_file(bucket, inference_output_key, f"{app_id}/review.txt")
     generated_output = open(f"{app_id}/review.txt", "r").read()
@@ -164,7 +167,7 @@ def get_generated_review(bucket, inference_output_key, app_id):
     os.removedirs(f"{app_id}")
     return generated_output
 
-def clean_output(inference_output, prompt, review_start):
+async def clean_output(inference_output, prompt, review_start):
     review = inference_output.replace(prompt, review_start)
     review_clean = review.replace("Game Description:", "")
     last_full_stop_idx = review_clean.rfind(".")

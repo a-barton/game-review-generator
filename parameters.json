@@ -1,5 +1,5 @@
 {
-    "bucket" : "game-review-generator-test-bucket",
+    "bucket" : "game-review-generator",
     "availability_zone" : "ap-southeast-2b",
     "batch_instance_type" : "g4dn.2xlarge",
     "bot_instance_type" : "t2.micro",
