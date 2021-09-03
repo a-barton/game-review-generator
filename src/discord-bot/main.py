@@ -71,8 +71,8 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
                 LOGGER.info("Attempting to reply to message with review")
                 await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
             except Exception as e:
-                print("Exception occurred while processing Steam link:")
-                print(str(e))
+                LOGGER.info("Exception occurred while processing Steam link:")
+                LOGGER.info(str(e))
                 return
     
     secret_name = "DISCORD_BOT_TOKEN"
