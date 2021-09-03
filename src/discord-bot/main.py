@@ -10,6 +10,7 @@ import asyncio
 import aiohttp
 
 from utils import get_secret
+from utils import LOGGER
 
 @click.command()
 @click.option("--bucket", "bucket", required=True)
@@ -25,7 +26,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
     @client.event
     async def on_ready():
-        print(f"Logged in as {client.user}")
+        LOGGER.info(f"Logged in as {client.user}")
 
     @client.event
     async def on_message(message):
@@ -37,25 +38,29 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
         if message.content.startswith("https://store.steampowered.com/app/"):
             try:
-                print("Detected Steam URL")
+                LOGGER.info("Detected Steam URL")
                 app_id = re.match(steam_url_regex, message.content).group(1)
-                print("Extracted app ID from URL")
+                LOGGER.info("Extracted app ID from URL")
                 app_name, app_desc = await get_app_details(app_id)
-                print("Retrieved app name and description from Steam:")
-                print(f"App Name = {app_name}\nApp Description = {app_desc}")
+                LOGGER.info("Retrieved app name and description from Steam:")
+                LOGGER.info(f"App Name = {app_name}\nApp Description = {app_desc}")
 
                 review_start = await get_random_review_start(app_name)
                 prompt = f"Game Description: {app_desc}\nReview: {review_start}"
+                LOGGER.info("Putting prompt in S3")
                 await put_prompt_in_s3(prompt, bucket, inference_input_key)
 
+                LOGGER.info("Attempting to start AWS Batch job")
                 job_id = await start_batch_job(batch_job_queue, batch_job_definition, region)
+                LOGGER.info("Waiting on job outcome")
                 job_outcome = await wait_on_job_completion(job_id, region)
 
                 if job_outcome == "FAILED" or job_outcome == "TIMEOUT":
-                    print(f"Job unsuccessful: {job_outcome}")
+                    LOGGER.info(f"Job unsuccessful: {job_outcome}")
                     return
 
                 os.makedirs(app_id, exist_ok=True)
+                LOGGER.info("Getting generated review from S3")
                 inference_output = await get_generated_review(bucket, inference_output_key, app_id)
                 review = await clean_output(inference_output, prompt, review_start)
 
@@ -63,6 +68,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
                     channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive').id
                     channel = client.get_channel(channel_id)
                     await channel.send(f"Archived review for {app_name}:\n```" + review + "```")
+                LOGGER.info("Attempting to reply to message with review")
                 await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
             except Exception as e:
                 print("Exception occurred while processing Steam link:")

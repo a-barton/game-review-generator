@@ -3,7 +3,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-LOGGER = logging.getLogger("game-review-generator")  # NOTE: Remove this after testing!
+LOGGER = logging.getLogger("game-review-generator")
 
 log_level = {
     "CRITICAL": logging.CRITICAL,
