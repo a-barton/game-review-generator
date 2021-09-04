@@ -135,7 +135,7 @@ async def put_prompt_in_s3(prompt, bucket, inference_input_key):
 async def start_batch_job(batch_job_queue, batch_job_definition, region):
     batch_client = boto3.client("batch", region_name=region)
     batch_resp = batch_client.submit_job(
-        jobName=batch_job_queue, 
+        jobName="ReviewModelBatchPredictJob", 
         jobQueue=batch_job_queue, 
         jobDefinition=batch_job_definition,
         containerOverrides={

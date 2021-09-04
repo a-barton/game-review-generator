@@ -2,4 +2,5 @@ discord
 requests
 boto3
 click
+aiohttp
 watchtower
