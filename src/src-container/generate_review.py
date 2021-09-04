@@ -7,6 +7,7 @@ from utils import LOGGER
 bucket = os.environ.get("S3_BUCKET", None)
 location = "aws" if bucket else "local"
 mode = os.environ.get("MODE", None)
+app_id = os.environ.get("APP_ID", None)
 
 hyperparameters = {
     "max_length" : 300,
@@ -31,8 +32,8 @@ if mode == "train":
     LOGGER.info("Model Fine Tuning Complete")
 else:
     LOGGER.info("Commencing Model Inference")
-    inference_input_key = "inference_input/prompt.txt"
-    inference_output_key = 'inference_output/generated.txt'
+    inference_input_key = f"inference_input/{app_id}/prompt.txt"
+    inference_output_key = f"inference_output/{app_id}/generated.txt"
     model_checkpoint = "fine-tuned-model"
     model = ReviewModel(location=location, bucket=bucket, model_checkpoint=model_checkpoint)
     model.predict(

@@ -28,6 +28,9 @@
               "Fn::Join": ["", [
                 "#!/bin/bash -ex\n",
                 "exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1\n",
+                "aws configure set region ",
+                { "Ref" : "AWS::Region" },
+                "\n",
                 "yum update -y\n",
                 "yum install -y python3\n",
                 "aws s3 sync s3://",
@@ -68,7 +71,8 @@
         "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/AmazonS3FullAccess",
           "arn:aws:iam::aws:policy/SecretsManagerReadWrite",
-          "arn:aws:iam::aws:policy/AWSBatchFullAccess"
+          "arn:aws:iam::aws:policy/AWSBatchFullAccess",
+          "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
         ]
       }
     },
