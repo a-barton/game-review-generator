@@ -21,8 +21,6 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
     client = discord.Client()
     steam_url_regex = re.compile(r"(?:https://store.steampowered.com/app/)([0-9]+)(?:/)")
-    inference_input_key = "inference_input/prompt.txt"
-    inference_output_key = "inference_output/generated.txt"
 
     @client.event
     async def on_ready():
@@ -47,11 +45,13 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
                 review_start = await get_random_review_start(app_name)
                 prompt = f"Game Description: {app_desc}\nReview: {review_start}"
+                LOGGER.info("=== PROMPT ===\n" + prompt)
                 LOGGER.info("Putting prompt in S3")
+                inference_input_key = f"inference_input/{str(app_id)}/prompt.txt"
                 await put_prompt_in_s3(prompt, bucket, inference_input_key)
 
                 LOGGER.info("Attempting to start AWS Batch job")
-                job_id = await start_batch_job(batch_job_queue, batch_job_definition, region)
+                job_id = await start_batch_job(batch_job_queue, batch_job_definition, region, app_id)
                 LOGGER.info("Waiting on job outcome")
                 job_outcome = await wait_on_job_completion(job_id, region)
 
@@ -61,8 +61,10 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
                 os.makedirs(app_id, exist_ok=True)
                 LOGGER.info("Getting generated review from S3")
+                inference_output_key = f"inference_output/{str(app_id)}/generated.txt"
                 inference_output = await get_generated_review(bucket, inference_output_key, app_id)
                 review = await clean_output(inference_output, prompt, review_start)
+                LOGGER.info("=== CLEANED GENERATED REVIEW ===\n" + review)
 
                 if "game-review-archive" in [channel.name for channel in message.guild.channels]:
                     channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive').id
@@ -71,8 +73,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
                 LOGGER.info("Attempting to reply to message with review")
                 await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
             except Exception as e:
-                LOGGER.info("Exception occurred while processing Steam link:")
-                LOGGER.info(str(e))
+                LOGGER.exception(e)
                 return
     
     secret_name = "DISCORD_BOT_TOKEN"
@@ -132,7 +133,7 @@ async def put_prompt_in_s3(prompt, bucket, inference_input_key):
     os.remove("prompt.txt")
     return
 
-async def start_batch_job(batch_job_queue, batch_job_definition, region):
+async def start_batch_job(batch_job_queue, batch_job_definition, region, app_id):
     batch_client = boto3.client("batch", region_name=region)
     batch_resp = batch_client.submit_job(
         jobName="ReviewModelBatchPredictJob", 
@@ -143,6 +144,10 @@ async def start_batch_job(batch_job_queue, batch_job_definition, region):
                 {
                     "name" : "MODE",
                     "value" : "inference"
+                },
+                {
+                    "name" : "APP_ID",
+                    "value" : str(app_id)
                 }
             ]
         }
