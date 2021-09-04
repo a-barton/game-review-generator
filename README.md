@@ -32,7 +32,7 @@ In order to clone and work with this repo (including deploying the solution stac
     2. Modify the `availability_zone` parameter value in `parameters.json` to reference your desired AWS availability zone - you must ensure that the instance type specified in the `batch_instance_type` parameter is one that is [available in the availability zone](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html) you select
 3. Open the `Makefile` at the root of the repo and address the following:
     1. Modify the `PROJECT_NAME` (defined at the top) to a different name of your choosing
-    2. Also modify the `PROJECT_ALIAS` in line with the change you made to the `PROJECT_NAME` (you can choose an abbreviated project slug/initialism similar to how I abbreviated `game-reveiw-generator` to `grg`)
+    2. Also modify the `PROJECT_ALIAS` in line with the change you made to the `PROJECT_NAME` (you can choose an abbreviated project slug/initialism similar to how I abbreviated `game-review-generator` to `grg`)
 4. Initialise the repo by opening a terminal at the root and running `make init`
     * This will setup a new Conda virtual environment and install required Python libraries
     * It will also source the fine-tuned game review model and place it in your nominated S3 bucket
