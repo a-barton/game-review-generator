@@ -21,6 +21,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
     client = discord.Client()
     steam_url_regex = re.compile(r"(?:https://store.steampowered.com/app/)([0-9]+)(?:/)")
+    message_max_length = 2000
 
     @client.event
     async def on_ready():
@@ -65,13 +66,14 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
                 inference_output = await get_generated_review(bucket, inference_output_key, app_id)
                 review = await clean_output(inference_output, prompt, review_start)
                 LOGGER.info("=== CLEANED GENERATED REVIEW ===\n" + review)
+                message_content = await build_message(review, message_max_length, app_name)
 
                 if "game-review-archive" in [channel.name for channel in message.guild.channels]:
                     channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive').id
                     channel = client.get_channel(channel_id)
-                    await channel.send(f"Archived review for {app_name}:\n```" + review + "```")
+                    await channel.send(message_content)
                 LOGGER.info("Attempting to reply to message with review")
-                await message.reply(f"Here's my take on {app_name} \n```" + review + "```")
+                await message.reply(message_content)
             except Exception as e:
                 LOGGER.exception(e)
                 return
@@ -184,6 +186,18 @@ async def clean_output(inference_output, prompt, review_start):
     last_full_stop_idx = review_clean.rfind(".")
     review_clean = review_clean[:last_full_stop_idx + 1]
     return review_clean
+
+async def build_message(review, message_max_length, app_name):
+    message_content = f"Here's my take on {app_name}:\n```{review}```"
+    padding_length = len(message_content) - len(review)
+    max_review_length = message_max_length - padding_length
+    if len(message_content) > message_max_length:
+        trimmed_review = review[:max_review_length]
+        last_full_stop_idx = trimmed_review.rfind(".")
+        trimmed_review = trimmed_review[:last_full_stop_idx + 1]
+        message_content = f"Here's my take on {app_name}:\n```{trimmed_review}```"
+    return message_content
+
 
 if __name__ == "__main__":
     main()
