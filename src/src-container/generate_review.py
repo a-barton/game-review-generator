@@ -1,4 +1,5 @@
 import os
+import json
 
 from utils import ReviewModel
 from utils import LOGGER
@@ -9,13 +10,9 @@ location = "aws" if bucket else "local"
 mode = os.environ.get("MODE", None)
 app_id = os.environ.get("APP_ID", None)
 
-hyperparameters = {
-    "max_length" : 300,
-    "min_length" : 80,
-    "repetition_penalty" : 1.6,
-    "no_repeat_ngram_size" : 4,
-    "temperature" : 1.5
-}
+# Load text generation (model inference) hyperparameters from config file
+with open("model_inference_hyperparameters.json", mode="r") as f:
+    hyperparameters = json.load(f)
 
 if location == "local":
     os.chdir('artifacts/')
