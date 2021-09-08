@@ -82,3 +82,9 @@ From a terminal at the root of the repo, you can invoke any of the `Makefile` ta
 * `make infrastructure` - executes creation of a Cloudformation stack according to the `cfn.json` template built earlier
 * `make all` - convenience target that runs `configuration`, `build`, `remote` and `infrastructure` all at once
 * `make destroy` - destroys the Cloudformation stack if it exists (you need to run this before redeploying the stack, and make sure all resources finish deleting)
+
+## **Modelling**
+
+### **Model Inference Hyperparameters**
+
+You can control the hyperparameters passed to the model via the `src/src-container/model-inference-hyperparameters.json` config file.  This dictionary structure will be passed as keyword arguments to the generate() function of the model.  Please see [**this Hugging Face transformers library docs page**](https://huggingface.co/transformers/main_classes/model.html#transformers.generation_utils.GenerationMixin.generate) for a list of available hyperparameters to control the behaviour of the model when generating text.
