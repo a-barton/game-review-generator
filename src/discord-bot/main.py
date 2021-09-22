@@ -64,7 +64,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
                 LOGGER.info("Getting generated review from S3")
                 inference_output_key = f"inference_output/{str(app_id)}/generated.txt"
                 inference_output = await get_generated_review(bucket, inference_output_key, app_id)
-                review = await clean_output(inference_output, prompt, review_start)
+                review = await clean_output(inference_output)
                 LOGGER.info("=== CLEANED GENERATED REVIEW ===\n" + review)
                 message_content = await build_message(review, message_max_length, app_name)
 
@@ -180,8 +180,9 @@ async def get_generated_review(bucket, inference_output_key, app_id):
     os.removedirs(f"{app_id}")
     return generated_output
 
-async def clean_output(inference_output, prompt, review_start):
-    review = inference_output.replace(prompt, review_start)
+async def clean_output(inference_output):
+    review_idx = inference_output.rfind("Review: ") + len("Review: ")
+    review = inference_output[review_idx:]
     review_clean = review.replace("Game Description:", "")
     last_full_stop_idx = review_clean.rfind(".")
     review_clean = review_clean[:last_full_stop_idx + 1]
