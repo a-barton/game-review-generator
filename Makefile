@@ -43,7 +43,7 @@ run-container-local-train:
 	docker run -e "MODE=train" -v "${CONTAINER_TEST_DIR}:/src/src-container/artifacts/" "${CONTAINER_NAME}:${CONTAINER_VERSION}"
 
 run-container-local-predict:
-	docker run -v "${CONTAINER_TEST_DIR}:/src/src-container/artifacts/" "${CONTAINER_NAME}:${CONTAINER_VERSION}"
+	docker run -e "APP_ID=362890" -v "${CONTAINER_TEST_DIR}:/src/src-container/artifacts/" "${CONTAINER_NAME}:${CONTAINER_VERSION}"
 
 ####################
 ## Build & Deploy ##
