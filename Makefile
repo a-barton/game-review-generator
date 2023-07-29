@@ -17,10 +17,12 @@ bucket-setup:
 	@echo "Retrieving model and syncing to provided S3 bucket..."
 	@python scripts/bucket_setup.py --parameters parameters.json --model_source_bucket ${MODEL_SOURCE_BUCKET}
 
-init: bucket-setup
+create-env:
 	conda env create -f environment.yaml -n $(PROJECT_ALIAS) \
 		|| \
 	conda env update -f environment.yaml -n $(PROJECT_ALIAS)
+
+init: create-env bucket-setup
 
 environment.yaml:
 	conda env export --no-builds > environment.yaml
