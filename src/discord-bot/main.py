@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 import boto3
 import re
 import json
@@ -19,17 +20,21 @@ from utils import LOGGER
 @click.option("--region", "region", required=True)
 def main(bucket, batch_job_queue, batch_job_definition, region):
 
-    client = discord.Client()
+    intents = discord.Intents.all()
+    intents.members = True
+
+    bot = commands.Bot(command_prefix="!", intents=intents)
+
     steam_url_regex = re.compile(r"(?:https://store.steampowered.com/app/)([0-9]+)(?:/)")
     message_max_length = 2000
 
-    @client.event
+    @bot.event
     async def on_ready():
-        LOGGER.info(f"Logged in as {client.user}")
+        LOGGER.info(f"Logged in as {bot.user}")
 
-    @client.event
+    @bot.event
     async def on_message(message):
-        if message.author == client.user:
+        if message.author == bot.user:
             return
 
         if message.content.startswith("$hello"):
@@ -70,7 +75,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
                 if "game-review-archive" in [channel.name for channel in message.guild.channels]:
                     channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive').id
-                    channel = client.get_channel(channel_id)
+                    channel = bot.get_channel(channel_id)
                     await channel.send(message_content)
                 LOGGER.info("Attempting to reply to message with review")
                 await message.reply(message_content)
@@ -80,7 +85,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
     
     secret_name = "DISCORD_BOT_TOKEN"
     bot_token = json.loads(get_secret(secret_name))[secret_name]
-    client.run(bot_token)
+    bot.run(bot_token)
 
 async def get_app_details(app_id):
     app_details_url = f"http://store.steampowered.com/api/appdetails?appids={app_id}&l=en"
