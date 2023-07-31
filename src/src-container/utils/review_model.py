@@ -24,6 +24,7 @@ class ReviewModel:
         prompt = open(prompt_input_path, encoding="utf-8").read()
         tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_name)
         model = AutoModelForCausalLM.from_pretrained(self.model_checkpoint)
+
         LOGGER.info("Tokenizing prompt input")
         input = tokenizer.encode(prompt, return_tensors="pt")
         prompt_token_length = input.size()[1]
@@ -31,9 +32,11 @@ class ReviewModel:
             hyperparameters["max_length"] = hyperparameters["max_length"] + prompt_token_length
         if "min_length" in hyperparameters.keys():
             hyperparameters["min_length"] = hyperparameters["min_length"] + prompt_token_length
+
         LOGGER.info("Running model inference on prompt")
         generated = model.generate(input, **hyperparameters)
         resulting_string = tokenizer.decode(generated.tolist()[0])
+
         LOGGER.info("Saving generated output")
         if "/" in prompt_output_path:
             output_dir = "/".join(prompt_output_path.split("/")[:-1])
@@ -41,20 +44,24 @@ class ReviewModel:
         open(prompt_output_path, mode="w", encoding="utf-8").write(resulting_string)
         if self.location == "aws":
             upload_s3_file(self.bucket, prompt_output_path, prompt_output_path)
+
         return
 
     def fine_tune(self, data_path, model_save_path):
+        LOGGER.info("Loading dataset")
         dataset = self._load_fine_tuning_data(data_path)
-        LOGGER.info("Dataset loaded")
+
+        LOGGER.info("Tokenizing dataset")
         tokenized_dataset = self._tokenize_dataset(dataset)
-        LOGGER.info("Dataset tokenized")
+
+        LOGGER.info("Preparing dataset for training")
         lm_dataset = tokenized_dataset.map(
             self._group_texts,
             batched=True,
             batch_size=1000,
             num_proc=4
         )
-        LOGGER.info("Dataset prepared for training")
+
         model = AutoModelForCausalLM.from_pretrained(self.model_checkpoint)
         training_args = TrainingArguments(
             "model-training",
@@ -70,8 +77,10 @@ class ReviewModel:
             train_dataset=lm_dataset["train"],
             eval_dataset=lm_dataset["train"] # Not concerned with evaluation metrics
         )
+
         LOGGER.info("Commencing training")
         trainer.train()
+
         LOGGER.info("Saving and uploading fine tuned model")
         trainer.save_model(model_save_path)
         if self.location == "aws":

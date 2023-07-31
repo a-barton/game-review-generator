@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 import boto3
 import re
 import json
@@ -19,22 +20,33 @@ from utils import LOGGER
 @click.option("--region", "region", required=True)
 def main(bucket, batch_job_queue, batch_job_definition, region):
 
-    client = discord.Client()
+    # Required new pattern in discord.py version 1.5 - bot apps must toggle their intents
+    # (behaviours, e.g. reading or sending messages) in the Discord dev portal, and then
+    # bot code written using discord.py must leverage the discord.Intents object
+    intents = discord.Intents.all()
+    intents.members = True
+
+    bot = commands.Bot(command_prefix="!", intents=intents)
+
     steam_url_regex = re.compile(r"(?:https://store.steampowered.com/app/)([0-9]+)(?:/)")
     message_max_length = 2000
 
-    @client.event
+    # Event triggered when bot first comes online and logs into attached Discord servers
+    @bot.event
     async def on_ready():
-        LOGGER.info(f"Logged in as {client.user}")
+        LOGGER.info(f"Logged in as {bot.user}")
 
-    @client.event
+    # Event triggered whenever a message is sent in any channel within an attached server
+    @bot.event
     async def on_message(message):
-        if message.author == client.user:
+        # Ignore messages sent by the bot itself
+        if message.author == bot.user:
             return
 
         if message.content.startswith("$hello"):
             await message.reply(f"Hello {message.author.display_name}!")
 
+        # Detect messages that begin with a Steam game URL link
         if message.content.startswith("https://store.steampowered.com/app/"):
             try:
                 LOGGER.info("Detected Steam URL")
@@ -70,7 +82,7 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
 
                 if "game-review-archive" in [channel.name for channel in message.guild.channels]:
                     channel_id = discord.utils.get(message.guild.text_channels, name='game-review-archive').id
-                    channel = client.get_channel(channel_id)
+                    channel = bot.get_channel(channel_id)
                     await channel.send(message_content)
                 LOGGER.info("Attempting to reply to message with review")
                 await message.reply(message_content)
@@ -80,8 +92,9 @@ def main(bucket, batch_job_queue, batch_job_definition, region):
     
     secret_name = "DISCORD_BOT_TOKEN"
     bot_token = json.loads(get_secret(secret_name))[secret_name]
-    client.run(bot_token)
+    bot.run(bot_token)
 
+# Poll Steam store to get details of app based on app ID
 async def get_app_details(app_id):
     app_details_url = f"http://store.steampowered.com/api/appdetails?appids={app_id}&l=en"
     request_successful = False
@@ -93,7 +106,7 @@ async def get_app_details(app_id):
                 time_taken = time.time() - time_started
                 if base_resp.status != 200:
                     if time_taken > 10:
-                        print("Steam app details request timing out")
+                        LOGGER.error(f"Steam app details request timing out after 10 seconds (http://store.steampowered.com/api/appdetails?appids={app_id}&l=en)")
                         return None, None
                     await asyncio.sleep(0.2)
                     continue
@@ -108,6 +121,7 @@ async def get_app_details(app_id):
     app_desc = re.sub("<[^<]+?>", " ", app_details_data["detailed_description"])
     return app_name, app_desc
 
+# Preface model prompt with a sentence opening that includes the app name
 async def get_random_review_start(app_name):
     review_starts = [
         f"{app_name} is a game",
@@ -126,7 +140,7 @@ async def get_random_review_start(app_name):
     random_start = random.choice(review_starts)
     return random_start
 
-
+# Upload prompt to S3 location for AWS Batch job to pull from
 async def put_prompt_in_s3(prompt, bucket, inference_input_key):
     with open("prompt.txt", "w", encoding="utf-8") as writer:
         writer.write(prompt)
@@ -135,6 +149,7 @@ async def put_prompt_in_s3(prompt, bucket, inference_input_key):
     os.remove("prompt.txt")
     return
 
+# Kick off AWS Batch job to run model
 async def start_batch_job(batch_job_queue, batch_job_definition, region, app_id):
     batch_client = boto3.client("batch", region_name=region)
     batch_resp = batch_client.submit_job(
@@ -156,6 +171,7 @@ async def start_batch_job(batch_job_queue, batch_job_definition, region, app_id)
     )
     return batch_resp["jobId"]
 
+# Wait for AWS Batch job to finish processing (or timeout after a given amount of time)
 async def wait_on_job_completion(job_id, region):
     max_wait_time = 1200
     check_delay = 2
@@ -172,6 +188,7 @@ async def wait_on_job_completion(job_id, region):
             return status
     return "TIMEOUT"
 
+# Retrieve generated output txt file from S3 location where AWS Batch job put it
 async def get_generated_review(bucket, inference_output_key, app_id):
     s3_client = boto3.client("s3")
     s3_client.download_file(bucket, inference_output_key, f"{app_id}/review.txt")
@@ -180,6 +197,7 @@ async def get_generated_review(bucket, inference_output_key, app_id):
     os.removedirs(f"{app_id}")
     return generated_output
 
+# Trim opening boilerplate text and truncate anything beyond last full sentence generated
 async def clean_output(inference_output):
     review_idx = inference_output.rfind("Review: ") + len("Review: ")
     review = inference_output[review_idx:]
@@ -188,6 +206,7 @@ async def clean_output(inference_output):
     review_clean = review_clean[:last_full_stop_idx + 1]
     return review_clean
 
+# Use generated review to build Discord reply message, adhering to max message length
 async def build_message(review, message_max_length, app_name):
     message_content = f"Here's my take on {app_name}:\n```{review}```"
     padding_length = len(message_content) - len(review)

@@ -2,13 +2,14 @@ import logging
 import watchtower
 import requests
 import os
+import datetime
 
 location = os.environ.get("LOCATION", None)
 
 logging.basicConfig(level=logging.DEBUG)
 
 if location == "local":
-    LOGGER = logging.getLogger("game-review-generator-local")
+    LOGGER = logging.getLogger(f"game-review-generator-local-{datetime.datetime.now()}")
     LOGGER.setLevel(logging.DEBUG)
 else:
     instance_id = requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
