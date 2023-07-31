@@ -15,27 +15,27 @@ with open("model_inference_hyperparameters.json", mode="r") as f:
     hyperparameters = json.load(f)
 
 if location == "local":
-    os.chdir('artifacts/')
+    os.chdir("artifacts/")
 
 if mode == "train":
     LOGGER.info("Commencing Model Fine Tuning")
     training_input_key = "training_input/data.csv"
     model_artifacts_key = "fine-tuned-model"
     model = ReviewModel(location=location, bucket=bucket)
-    model.fine_tune(
-        data_path=training_input_key, 
-        model_save_path=model_artifacts_key
-    )
+    model.fine_tune(data_path=training_input_key, model_save_path=model_artifacts_key)
     LOGGER.info("Model Fine Tuning Complete")
+
 else:
     LOGGER.info("Commencing Model Inference")
     inference_input_key = f"inference_input/{app_id}/prompt.txt"
     inference_output_key = f"inference_output/{app_id}/generated.txt"
     model_checkpoint = "fine-tuned-model"
-    model = ReviewModel(location=location, bucket=bucket, model_checkpoint=model_checkpoint)
+    model = ReviewModel(
+        location=location, bucket=bucket, model_checkpoint=model_checkpoint
+    )
     model.predict(
-        prompt_input_path=inference_input_key, 
-        prompt_output_path=inference_output_key, 
-        hyperparameters = hyperparameters
+        prompt_input_path=inference_input_key,
+        prompt_output_path=inference_output_key,
+        hyperparameters=hyperparameters,
     )
     LOGGER.info("Model Inference Complete")
